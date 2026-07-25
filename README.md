@@ -1,4 +1,4 @@
-# mainlyfolk-cli
+# mainlynorfolk-cli
 
 A CLI and MCP server over [Mainly Norfolk](https://www.mainlynorfolk.info/folk/),
 Reinhard Zierke's encyclopaedic archive of English folk music, plus
@@ -11,14 +11,14 @@ operation.
 ## Install
 
 ```bash
-cargo install mainlyfolk-cli
+cargo install mainlynorfolk-cli
 ```
 
-Or grab a binary from [releases](https://github.com/radiosilence/mainlyfolk-cli/releases),
+Or grab a binary from [releases](https://github.com/radiosilence/mainlynorfolk-cli/releases),
 or pull the image:
 
 ```bash
-docker pull ghcr.io/radiosilence/mainlyfolk-cli
+docker pull ghcr.io/radiosilence/mainlynorfolk-cli
 ```
 
 ## CLI usage
@@ -108,8 +108,8 @@ Four layers enforce that, cheapest first:
   GraphQL query that revisits the same hub pages — the Child index, an
   artist's discography, the album every track on it points back to — free
   after the first visit, rather than a disk read per field.
-- **A disk cache**, under the platform cache directory (`~/.cache/mainlyfolk`
-  on Linux, `~/Library/Caches/mainlyfolk` on macOS), keyed by URL and
+- **A disk cache**, under the platform cache directory (`~/.cache/mainlynorfolk`
+  on Linux, `~/Library/Caches/mainlynorfolk` on macOS), keyed by URL and
   surviving process exit — a session that looks at the Child index ten times
   over a week fetches it once, and a long-running MCP server keeps that
   benefit across restarts.

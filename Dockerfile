@@ -1,4 +1,4 @@
-# mainlyfolk-cli as a container. The default command runs the MCP server over
+# mainlynorfolk-cli as a container. The default command runs the MCP server over
 # HTTP. Plain Rust build like caldav-cli's — no native toolchain needed.
 #
 # The archive client caches fetched pages on disk under the user's cache dir

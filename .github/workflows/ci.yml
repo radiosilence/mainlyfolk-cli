@@ -9,7 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }} # radiosilence/mainlyfolk-cli
+  IMAGE_NAME: ${{ github.repository }} # radiosilence/mainlynorfolk-cli
 
 jobs:
   check:
@@ -59,12 +59,12 @@ jobs:
       - name: Package
         run: |
           cd target/${{ matrix.target }}/release
-          tar -czvf ../../../mainlyfolk-cli-${{ matrix.name }}.tar.gz folk
+          tar -czvf ../../../mainlynorfolk-cli-${{ matrix.name }}.tar.gz folk
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: mainlyfolk-cli-${{ matrix.name }}
-          path: mainlyfolk-cli-${{ matrix.name }}.tar.gz
+          name: mainlynorfolk-cli-${{ matrix.name }}
+          path: mainlynorfolk-cli-${{ matrix.name }}.tar.gz
 
   publish:
     needs: release
