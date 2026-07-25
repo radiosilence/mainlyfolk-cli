@@ -287,6 +287,11 @@ pub struct Book {
     pub authors: Vec<String>,
     /// Publisher and place, e.g. `"London: Chatto & Windus Piccadilly"`.
     pub publisher: Option<String>,
+    /// Year of the **original** edition. Nearly half the bibliography lists a
+    /// reprint or later edition alongside it — Buchan's *Ancient Ballads* is
+    /// 1828 with an 1875 printing — and the original is what dates the
+    /// collection a song page is citing. Reprint years are deliberately not
+    /// surfaced.
     pub year: Option<String>,
     /// Which of the bibliography's sections this sits under — "Ballads and
     /// Songs", "Folk Song and Music", "Biographies", "Other Books".
