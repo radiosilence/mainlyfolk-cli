@@ -27,21 +27,21 @@ The binary is `folk`. All output is JSON.
 
 ```bash
 folk search "reynardine"                    # title search
-folk search --scheme roud --number 12       # Roud 12 — The Twa Corbies / other titles
+folk search --scheme roud --number 12       # Roud 12 — The Elfin Knight / Scarborough Fair
 folk song /martin.carthy/songs/reynardine.html
 folk song /martin.carthy/songs/reynardine.html --lyrics
 
-folk child 84                               # Child #84 — Bonny Barbara Allan
+folk child 84                               # Child 84 — Barbara Allen
 folk child 1-50                             # a range
-folk laws P15
+folk laws P15                               # Laws P15 — Reynardine / The Mountains High
 
 folk artist "Martin Carthy"                 # index page + chronological discography
 folk records "carthy"                       # search releases by artist or album
-folk album /martin.carthy/records/carthy.html
+folk album /martin.carthy/records/martincarthy.html
 
 folk labels                                 # every label the archive has a discography for
 folk books                                  # the bibliography — books the archive's song pages cite
-folk books "Roud"                           # filter by section, author or title
+folk books "Ballads and Songs"              # filter by section, author or title
 folk waterways "hard working boater"        # canal songs from waterwaysongs.info
 
 folk page /folk/latestchanges.html          # any archive page as plain text
