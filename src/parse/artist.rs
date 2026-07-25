@@ -244,8 +244,10 @@ pub(crate) struct ReleaseMeta {
 /// Only the first and last comma-segments are ever inspected for format and year:
 /// scanning every segment would misread a catalogue number that happens to embed a
 /// year-shaped run of digits (`"Topic 12TS2015"`) as the release year. Whatever's
-/// left in the middle — normally exactly one segment — is the label/catalogue
-/// number, split by [`split_label_and_catalogue`].
+/// left in the middle — normally one segment, occasionally two when an entry
+/// writes a comma between label and catalogue (`"Decca, LK 4844"`) — is rejoined
+/// and handed to [`split_label_and_catalogue`] as one string, so that stray comma
+/// doesn't silently drop the catalogue number.
 pub(crate) fn parse_release_tail(tail: &str, fallback_year: Option<&str>) -> ReleaseMeta {
     let tokens: Vec<&str> = tail
         .split(',')
@@ -279,8 +281,12 @@ pub(crate) fn parse_release_tail(tail: &str, fallback_year: Option<&str>) -> Rel
     } else {
         tokens.len()
     };
+    // Normally exactly one segment ("Decca LK 4545"), but a handful of entries
+    // put a comma between label and catalogue ("Decca, LK 4844") — joining
+    // every middle segment before splitting means that comma doesn't silently
+    // drop the catalogue number.
     let (label, catalogue_number) = if start < end {
-        split_label_and_catalogue(tokens[start])
+        split_label_and_catalogue(&tokens[start..end].join(" "))
     } else {
         (None, None)
     };
@@ -454,6 +460,10 @@ mod tests {
         // The no-space form ("TL5368") is the one most likely to regress.
         assert!(albums.iter().any(|a| a.label.as_deref() == Some("Fontana")
             && a.catalogue_number.as_deref() == Some("TL5368")));
+        // "LP, Decca, LK 4844, 1967" — a stray comma between label and
+        // catalogue must not make the catalogue number vanish.
+        assert!(albums.iter().any(|a| a.label.as_deref() == Some("Decca")
+            && a.catalogue_number.as_deref() == Some("LK 4844")));
         assert!(albums.iter().all(|a| a.path.starts_with('/')));
     }
 
