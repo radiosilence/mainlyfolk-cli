@@ -31,9 +31,9 @@ use crate::models::Source;
 /// maintainer seeing it in their logs can find out what it is and complain to
 /// somebody. Anonymous scrapers are how sites end up blocking whole ranges.
 pub const USER_AGENT: &str = concat!(
-    "mainlyfolk-cli/",
+    "mainlynorfolk-cli/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/radiosilence/mainlyfolk-cli)"
+    " (+https://github.com/radiosilence/mainlynorfolk-cli)"
 );
 
 /// Simultaneous in-flight requests, across every source.
@@ -78,7 +78,7 @@ impl CacheEntry {
 /// Where cached pages live. `None` disables persistence — the client still
 /// works, it just pays for every page every run.
 fn cache_dir() -> Option<PathBuf> {
-    let dir = dirs::cache_dir()?.join("mainlyfolk");
+    let dir = dirs::cache_dir()?.join("mainlynorfolk");
     std::fs::create_dir_all(&dir).ok()?;
     Some(dir)
 }
