@@ -82,7 +82,7 @@ enum Commands {
         lyrics: bool,
     },
 
-    /// Browse the Child Ballads — the canonical 305
+    /// Browse the Child Ballads the archive covers — 209 of Child's 305
     Child {
         /// A number (`84`), a range (`1-50`), or text to match
         filter: Option<String>,
@@ -114,6 +114,12 @@ enum Commands {
 
     /// List the record labels with a discography on the archive
     Labels,
+
+    /// Browse the bibliography — the books the archive's song pages cite
+    Books {
+        /// Filter by section, author or title
+        filter: Option<String>,
+    },
 
     /// Canal and inland-waterways songs, from waterwaysongs.info
     Waterways {
@@ -211,6 +217,8 @@ async fn main() {
         Commands::Album { path } => commands::album(no_cache, &path).await,
 
         Commands::Labels => commands::labels(no_cache).await,
+
+        Commands::Books { filter } => commands::books(no_cache, filter.as_deref()).await,
 
         Commands::Waterways { query } => commands::waterways(no_cache, query.as_deref()).await,
 

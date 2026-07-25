@@ -43,6 +43,7 @@ todo_command! {
     records(query: &str),
     album(path: &str),
     labels(),
+    books(filter: Option<&str>),
     waterways(query: Option<&str>),
     page(path: &str),
     latest(),
