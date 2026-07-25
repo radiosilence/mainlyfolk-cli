@@ -145,7 +145,7 @@ fn parse_refs(article: &ElementRef) -> (SongRefs, Vec<Link>, bool) {
             refs.master_title = Some(rest.trim().to_string());
         } else if let Some(rest) = part.strip_prefix("Ballad Index ") {
             if refs.ballad_index.is_none() {
-                refs.ballad_index = Some(cut_at_slash(rest).to_string());
+                refs.ballad_index = Some(cut_at_aside(rest).to_string());
             }
         } else if let Some(rest) = part.strip_prefix("G/D ") {
             push_values(&mut refs.greig_duncan, rest);
@@ -184,11 +184,18 @@ fn parse_refs(article: &ElementRef) -> (SongRefs, Vec<Link>, bool) {
     (refs, external_links, traditional)
 }
 
-/// Cuts a reference clause's value off before a trailing `/ Song Subject ...`
-/// aside — the only place the archive appends unrelated prose to a scheme
-/// value rather than starting a new `;`-separated clause.
-fn cut_at_slash(value: &str) -> &str {
-    match value.find(" / ") {
+/// Cuts a reference clause's value off before a trailing aside — `/ Song
+/// Subject ...` or `(formerly Roud 3098)` — rather than starting a new
+/// `;`-separated clause. A superseded number in parens is real information,
+/// but `SongRefs` has nowhere to put it and every consumer (not least
+/// `search.php`, which the current number round-trips through) needs the
+/// current one clean, so the aside is dropped rather than folded in.
+fn cut_at_aside(value: &str) -> &str {
+    let idx = [value.find(" / "), value.find('(')]
+        .into_iter()
+        .flatten()
+        .min();
+    match idx {
         Some(idx) => value[..idx].trim(),
         None => value.trim(),
     }
@@ -196,7 +203,7 @@ fn cut_at_slash(value: &str) -> &str {
 
 fn push_values(target: &mut Vec<String>, value: &str) {
     target.extend(
-        cut_at_slash(value)
+        cut_at_aside(value)
             .split(',')
             .map(str::trim)
             .filter(|v| !v.is_empty())
@@ -526,6 +533,22 @@ mod tests {
             "<html><body><article id=\"mainArticle\"><p>Nothing here.</p></article></body></html>";
         let err = parse(html, "/nowhere.html").unwrap_err();
         assert!(matches!(err, Error::Parse { what: "song", .. }));
+    }
+
+    #[test]
+    fn a_superseded_number_in_parens_is_dropped_from_the_value() {
+        // refs.roud round-trips through search.php's keyval as-is; a value
+        // like "3356 (formerly Roud 3098)" matches nothing there.
+        let html = "<article id=\"mainArticle\">\
+            <p>[ Roud 3356 (formerly Roud 3098) ; G/D 1:77 ; trad.]</p>\
+            </article>";
+        let document = Html::parse_fragment(html);
+        let article_selector = Selector::parse("article#mainArticle").unwrap();
+        let article = document.select(&article_selector).next().unwrap();
+
+        let (refs, _, _) = parse_refs(&article);
+        assert_eq!(refs.roud, ["3356"]);
+        assert_eq!(refs.greig_duncan, ["1:77"]);
     }
 
     #[test]
