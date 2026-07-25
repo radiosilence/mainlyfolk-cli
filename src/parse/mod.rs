@@ -22,10 +22,13 @@
 //! keep them that way, and let the caller `await` the fetch first.
 
 use crate::error::Result;
-use crate::models::{Album, Artist, Label, Page, Song, SongSummary, Source, Track, WaterwaysSong};
+use crate::models::{
+    Album, Artist, Book, Label, Page, Song, SongSummary, Source, Track, WaterwaysSong,
+};
 
 pub mod album;
 pub mod artist;
+pub mod book;
 pub mod index;
 pub mod page;
 pub mod song;
@@ -55,6 +58,15 @@ pub fn song_list(html: &str, base: &str) -> Vec<SongSummary> {
 /// a fixed list of eleven labels and the site publishes twenty.
 pub fn labels(html: &str) -> Vec<Label> {
     index::labels(html)
+}
+
+/// The archive's bibliography — the books its song pages cite.
+///
+/// Song-page citations link here by anchor, so parsing the bibliography is what
+/// turns a cited title into a record with a publisher, a year, and sometimes a
+/// link to the full text.
+pub fn books(html: &str, base: &str) -> Vec<Book> {
+    book::index(html, base)
 }
 
 /// An artist's index page.

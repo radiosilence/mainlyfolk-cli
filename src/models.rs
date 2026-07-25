@@ -265,6 +265,34 @@ pub struct Track {
     pub duration: Option<String>,
 }
 
+/// A book in the archive's bibliography.
+///
+/// Distinct from [`BookRef`], which is a citation *on a song page*. This is the
+/// bibliography's own entry, with the publication detail a citation omits — and
+/// it is what a `BookRef.path` resolves to, which is what turns a cited title
+/// into something you can actually read about.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Book {
+    /// The entry's anchor id, e.g. `"baringgould:songsofthewest"`. Stable, and
+    /// what song-page citations link to as `/folk/books/#<id>`.
+    pub id: String,
+    /// Path to the book's own page, or to its anchor in the bibliography.
+    pub path: String,
+    pub title: String,
+    /// Authors and editors, as the entry credits them.
+    pub authors: Vec<String>,
+    /// Publisher and place, e.g. `"London: Chatto & Windus Piccadilly"`.
+    pub publisher: Option<String>,
+    pub year: Option<String>,
+    /// Which of the bibliography's sections this sits under — "Ballads and
+    /// Songs", "Folk Song and Music", "Biographies", "Other Books".
+    pub section: Option<String>,
+    /// A full text online, where the archive links one (Gutenberg, archive.org).
+    pub online_url: Option<String>,
+    pub cover_url: Option<String>,
+}
+
 /// A record label with a discography page on the archive.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
