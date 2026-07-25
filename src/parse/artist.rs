@@ -187,6 +187,13 @@ fn release_entries(
 /// credited artist) and the text after its last one (the format/label/year tail).
 /// Text between several cites — reissue notes like "(reissue of ... and ...)" — is
 /// deliberately dropped: it belongs to neither role.
+///
+/// When a `<p>` holds several cites, the tail is only ever read from after the
+/// *last* one. This is correct, not a shortcut: those entries are reissue notes
+/// citing the other releases a reissue drew on ("Round Up ... (reissue of half
+/// of Martin Carthy and Second Album)"), not two releases sharing one entry — the
+/// primary release's own metadata sits between the first cite and the note, and
+/// the note itself carries none of its own worth keeping.
 pub(crate) fn split_around_cites(p: ElementRef) -> (String, String) {
     let children: Vec<_> = p.children().collect();
     let last_cite_idx = children
@@ -317,25 +324,51 @@ pub(crate) fn find_year(text: &str) -> Option<String> {
     found
 }
 
-/// Splits `"Topic 12TS340"` into label `"Topic"` and catalogue number `"12TS340"`:
-/// the last whitespace-separated word containing a digit is the catalogue number,
-/// everything before it is the label. A text with no such word is all label.
+/// Splits `"Topic Records TSCD340"` into label `"Topic Records"` and catalogue
+/// number `"TSCD340"`.
+///
+/// Catalogue numbers are near-universally all-caps alphanumeric
+/// (`LK 4545`, `EPK-801`, `TSCD707/8`); label names routinely aren't
+/// (`"Topic Records"`, `"Folk Scene"`). So: walk words from the right while
+/// each one is entirely uppercase letters/digits/`-`/`/`/`.`/`'`, and take that
+/// trailing run as the catalogue number. A first pass tried "last word
+/// containing a digit", but that splits a catalogue number in half whenever
+/// it's itself `LETTERS NUMBERS` (`"Decca LK 4545"` gave label `"Decca LK"`,
+/// catalogue `"4545"` — wrong; it's label `"Decca"`, catalogue `"LK 4545"`).
+///
+/// Two guards, and either failing means the whole text is the label with no
+/// catalogue number: the trailing run must contain at least one digit (an
+/// all-letter run like "UK" is a country code, not a catalogue number), and
+/// at least one word must remain outside it (there must be a label left).
 pub(crate) fn split_label_and_catalogue(text: &str) -> (Option<String>, Option<String>) {
     let words: Vec<&str> = text.split_whitespace().collect();
-    match words
-        .iter()
-        .rposition(|w| w.chars().any(|c| c.is_ascii_digit()))
-    {
-        Some(idx) => {
-            let catalogue_number = Some(words[idx].to_string());
-            let label = words[..idx].join(" ");
-            ((!label.is_empty()).then_some(label), catalogue_number)
-        }
-        None => {
-            let text = text.trim();
-            ((!text.is_empty()).then(|| text.to_string()), None)
-        }
+    if words.is_empty() {
+        return (None, None);
     }
+
+    let is_catalogue_word = |w: &str| {
+        !w.is_empty()
+            && w.chars()
+                .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || "-/.'".contains(c))
+    };
+
+    let mut split = words.len();
+    while split > 0 && is_catalogue_word(words[split - 1]) {
+        split -= 1;
+    }
+    let catalogue_words = &words[split..];
+    let has_digit = catalogue_words
+        .iter()
+        .any(|w| w.chars().any(|c| c.is_ascii_digit()));
+
+    if split == 0 || catalogue_words.is_empty() || !has_digit {
+        let text = text.trim();
+        return ((!text.is_empty()).then(|| text.to_string()), None);
+    }
+
+    let label = words[..split].join(" ");
+    let catalogue_number = catalogue_words.join(" ");
+    (Some(label), Some(catalogue_number))
 }
 
 /// Results of `records/search.php`, grouped as the archive groups them: one
@@ -414,13 +447,13 @@ mod tests {
         let albums = discography(ARTIST_DISCOGRAPHY, "/martin.carthy/records/index.html");
         assert!(albums.len() >= 100, "got {}", albums.len());
         assert!(albums.iter().any(|a| a.year.as_deref() == Some("1965")));
-        // "Decca LK 4545" splits on its last digit-bearing word.
-        assert!(
-            albums
-                .iter()
-                .any(|a| a.catalogue_number.as_deref() == Some("4545")
-                    && a.label.as_deref() == Some("Decca LK"))
-        );
+        // The catalogue number is the trailing all-caps run, not just the last
+        // digit-bearing word — "LK 4545" stays together rather than splitting.
+        assert!(albums.iter().any(|a| a.label.as_deref() == Some("Decca")
+            && a.catalogue_number.as_deref() == Some("LK 4545")));
+        // The no-space form ("TL5368") is the one most likely to regress.
+        assert!(albums.iter().any(|a| a.label.as_deref() == Some("Fontana")
+            && a.catalogue_number.as_deref() == Some("TL5368")));
         assert!(albums.iter().all(|a| a.path.starts_with('/')));
     }
 
