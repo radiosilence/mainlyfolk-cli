@@ -82,7 +82,7 @@ enum Commands {
         lyrics: bool,
     },
 
-    /// Browse the Child Ballads — the canonical 305
+    /// Browse the Child Ballads the archive covers — 209 of Child's 305
     Child {
         /// A number (`84`), a range (`1-50`), or text to match
         filter: Option<String>,
