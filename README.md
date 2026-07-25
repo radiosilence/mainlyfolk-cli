@@ -31,9 +31,9 @@ folk search --scheme roud --number 12       # Roud 12 — The Elfin Knight / Sca
 folk song /martin.carthy/songs/reynardine.html
 folk song /martin.carthy/songs/reynardine.html --lyrics
 
-folk child 84                               # Child #84 — Bonny Barbara Allan
+folk child 84                               # Child 84 — Barbara Allen
 folk child 1-50                             # a range
-folk laws P15
+folk laws P15                               # Laws P15 — Reynardine / The Mountains High
 
 folk artist "Martin Carthy"                 # index page + chronological discography
 folk records "carthy"                       # search releases by artist or album
@@ -54,6 +54,10 @@ folk completions zsh
 
 Every command that reads the archive also accepts `--no-cache`, global, to
 bypass the disk cache for that run.
+
+`child` browses what the archive has, not the full canon: Francis James
+Child catalogued 305 ballads, and the archive currently has pages for 209 of
+them.
 
 ## MCP server
 
