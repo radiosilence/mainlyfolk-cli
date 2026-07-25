@@ -261,7 +261,10 @@ pub struct Track {
     /// Path to the song page, when the track links to one. The edge from a
     /// release back into the song archive.
     pub song_path: Option<String>,
-    /// Playing time as printed, e.g. `"3:42"`.
+    /// Playing time as printed. The archive writes it with a decimal point —
+    /// `"2.31"` is two minutes thirty-one — though a colon appears here and
+    /// there. Kept verbatim either way rather than normalised, since the
+    /// archive's own convention is the honest thing to preserve.
     pub duration: Option<String>,
 }
 
