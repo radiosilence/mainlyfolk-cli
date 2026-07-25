@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/folk.css" type="text/css" media="all">
+<link rel="stylesheet" href="local.css" type="text/css" media="all">
+
+<title>Mainly Norfolk: English Folk and Other Good Music</title>
+</head>
+
+<body>
+<header id="pageHeader"><span id="head"></span>
+<a href="javascript:toggleNav();"><img id="togglenav" src="/images/menutoggle.png" alt="Hide navigation column" title="Hide navigation column"></a>
+<script>// <![CDATA[
+// check all or clear all checkboxes; argument is true|false
+// var showNav = window.innerWidth > 980;
+const mediaQuery = window.matchMedia('(min-width: 768px)');
+var showNav = mediaQuery.matches;
+function handleWindowChange(e) {
+   var button = document.getElementById("togglenav");
+   var mainnav = document.getElementById("mainNav");
+   if (! mainnav) {return;}
+   var body = document.getElementsByTagName("body")[0];
+   if (e.matches) {
+      button.style.display = "inline";
+      if (showNav) {
+         mainnav.style.display = "block";
+         body.style.gridTemplateColumns = "12rem 1fr";
+         button.title = button.alt = "Hide navigation column";
+      } else {
+         mainnav.style.display = "none";
+         body.style.gridTemplateColumns = "0 1fr";
+         button.title = button.alt = "Show navigation column";
+      }
+   } else {
+      mainnav.style.display = "block";
+      body.style.gridTemplateColumns = "1fr";
+      button.style.display = "none";
+   }
+}
+// Register event listener
+mediaQuery.addListener(handleWindowChange);
+// Initial check
+handleWindowChange(mediaQuery);
+// show or not show navigation
+function toggleNav() {
+   if (mediaQuery.matches) {
+      showNav = ! showNav;
+      handleWindowChange(mediaQuery);
+   }
+}
+// ]]></script>
+<a href="/peter.bellamy/records/mainlynorfolk.html#mainlynorfolk"><img src="/peter.bellamy/images/smallrec/mainlynorfolk_xtra1060.jpg" alt="Peter Bellamy: Mainly Norfolk" title="Peter Bellamy: Mainly Norfolk (Transatlantic XTRA 1060)"></a>
+<h1>Mainly Norfolk: English
+<!-- addtitle addition disabled as it's too wide for mobile devices -->
+
+Folk and Other Good Music</h1>
+
+
+
+
+</header>
+<!-- not include virtual="navigation.shtml" -->
+<article id="mainArticle">
+
+<article>
+<p class="reference albumgallery">
+<a href="records/samcarter.html#singsnicjones"><img src="images/smallrec/samcartersingsnicjones_cap018cd.jpg" width="150" height="150" title="Sam Carter Sings Nic Jones (Captain CAP018CD)" alt="Sam Carter Sings Nic Jones (Captain CAP018CD)"></a>
+<a href="records/frankiearcher.html#thedanceofdeath"><img src="images/smallrec/thedanceofdeath_potb01lp.jpg" width="150" height="150" title="Frankie Archer: The Dance of Death (prrr of the bear POTB01LP)" alt="Frankie Archer: The Dance of Death (prrr of the bear POTB01LP)"></a>
+<a href="records/ladymaisery.html#wakefire"><img src="images/smallrec/wakefire_lmcd06.jpg" width="150" height="150" title="Lady Maisery and Jimmy Aldridge &amp; Sid Goldsmith: Wakefire (LM Records LMCD06)" alt="Lady Maisery and Jimmy Aldridge &amp; Sid Goldsmith: Wakefire (LM Records LMCD06)"></a>
+<a href="records/emilyportman.html#dominionofspells"><img src="images/smallrec/dominionofspells_hud059lp.jpg" width="150" height="150" title="Emily Portman: Dominion of Spells (Hudson HUD055CD)" alt="Emily Portman: Dominion of Spells (Hudson HUD055CD)"></a>
+<a href="records/hollyclarke.html#wildferalfierce"><img src="images/smallrec/wildferalfierce_hc95wff_sq.jpg" width="150" height="150" title="Holly Clarke: Wild, Feral, Fierce (Holly Clarke)" alt="Holly Clarke: Wild, Feral, Fierce (Holly Clarke)"></a>
+<a href="records/steveturner.html#ahostoffuriuousfancies"><img src="images/smallrec/ahostoffuriousfancies_ltcd1108_sq.jpg" width="150" height="150" title="Steve Turner: A Host of Furious Fancies (Tradition Bearers LTCD1108)" alt="Steve Turner: A Host of Furious Fancies (Tradition Bearers LTCD1108)"></a>
+<a href="records/jennbutterworth.html#herbydesign"><img src="images/smallrec/herbydesign_110cd001.jpg" width="150" height="150" title="Jenn Butterworth: Her by Design (One in Ten 110CD001)" alt="Jenn Butterworth: Her by Design (One in Ten 110CD001)"></a>
+<!--
+<a href="records/kerrysmith.html#whenyousingyoudriveawaygrief"><img src="images/smallrec/whenyousingyoudriveawaygrief_kerrysmith.jpg" width="150" height="150" title="Kerry Smith: When You Sing You Drive Away Grief (Kerry Smith)" alt="Kerry Smith: When You Sing You Drive Away Grief (Kerry Smith)"></a>
+<a href="records/brianpeters.html#tasks"><img src="images/smallrec/tasks_pugcd011_sq.jpg" width="150" height="150" title="Brian Peters: Tasks (Pugwash PUG CD 011)" alt="Brian Peters: Tasks (Pugwash PUG CD 011)"></a>
+<a href="records/bethmalcolm.html#folkmosis"><img src="images/smallrec/folkmosis_bam104_sq.jpg" width="150" height="150" title="Beth Malcolm: Folkmosis (Beth Malcolm BAM104)" alt="Beth Malcolm: Folkmosis (Beth Malcolm BAM104)"></a>
+-->
+</p>
+
+<div class="topsearch">
+<form method="post" accept-charset="UTF-8" action="records/search.php">
+Search for artist:&nbsp;
+<input class="navartistinput" type="text" name="artist" size="15" title="Enter artist, album name, or part of those; wildcard * at the end is allowed">
+<!-- <input type="submit" value="Submit"> -->
+</form>
+<form method="post" accept-charset="UTF-8" action="songs/search.php">
+Search for song:&nbsp;
+<input class="navsonginput" type="text" name="song" size="15" title="Enter song title or part of it (wildcard * at the end is allowed) or 'Roud nn' or 'Child nn'">
+<!-- <input type="submit" value="Submit"> -->
+</form>
+<hr>
+</div>
+
+<p class="citation">
+
+
+&ldquo;You can’t trust folk songs.  They always sneak up on you.&rdquo;<br>
+Granny Weatherwax in Terry Pratchett:
+<cite><a class="external" href="https://www.lspace.org/books/reviews/witches-abroad.html">Witches Abroad</a></cite>
+
+</p>
+
+<h3 style="margin-top: -1rem;">Featured Musicians and Groups</h3>
+
+<p class="comment">
+This list links to discographies of the most important
+(to me, that is ;-)
+musicians and groups featured on Mainly Norfolk.
+You’ll find a lot more of them in the comprehensive
+<a href="records/">folk discography</a> and in the
+record label discographies shown at the top of the navigation column.</p>
+
+<div class="threecolumns"><ul>
+<!--
+ <li><a href="../harvey.andrews/">Harvey&nbsp;Andrews</a></li>
+-->
+ <li><a href="../frankie.armstrong/">Frankie&nbsp;Armstrong</a></li>
+ <li><a href="../steve.ashley/">Steve&nbsp;Ashley</a></li>
+ <li><a href="../roy.bailey/">Roy&nbsp;Bailey</a></li>
+<!--
+ <li><a href="records/damienbarber.html">Damien Barber, The&nbsp;Demon&nbsp;Barbers</a></li>
+-->
+ <li><a href="../mrs.ackroyd/">Les Barker, The&nbsp;Mrs&nbsp;Ackroyd&nbsp;Band</a></li>
+ <li><a href="../bellowhead/">Jon Boden, John Spiers, Bellowhead</a></li>
+ <li><a href="records/maggieboyle.html">Maggie Boyle, Grace&nbsp;Notes</a></li>
+ <li><a href="../anne.briggs/">Anne&nbsp;Briggs</a></li>
+ <li><a href="../ian.campbell/">Ian Campbell Folk Group</a></li>
+ <li><a href="../cara/">Cara, Deitsch, Litha</a></li>
+ <li><a href="../eliza.carthy/">Eliza&nbsp;Carthy</a></li>
+ <li><a href="../martin.carthy/">Martin&nbsp;Carthy</a></li>
+ <li><a href="../shirley.collins/">Shirley&nbsp;Collins</a></li>
+ <li><a href="../coope.boyes.simpson/">Coope&nbsp;Boyes&nbsp;&amp;&nbsp;Simpson</a></li>
+ <li><a href="../copperfamily/">The Copper Family</a></li>
+ <li><a href="../sandy.denny/">Sandy&nbsp;Denny</a></li>
+<!--
+ <li><a href="records/kimedgar.html">Kim Edgar</a></li>
+-->
+ <li><a href="../fairport/">Fairport&nbsp;Convention</a></li>
+<!--
+ <li><a href="records/ionafyfe.html">Iona Fyfe</a></li>
+-->
+ <li><a href="records/dickgaughan.html">Dick Gaughan</a></li>
+ <li><a href="records/fayhield.html">Fay Hield</a></li>
+ <li><a href="../guvnor/">Ashley&nbsp;Hutchings</a></li>
+ <li><a href="../nic.jones/">Nic&nbsp;Jones</a></li>
+ <li><a href="records/fredjordan.html">Fred Jordan</a></li>
+ <li><a href="records/kerrfagan.html">Nancy&nbsp;Kerr, James&nbsp;Fagan</a></li>
+ <li><a href="../louis.killen/">Louisa Jo (Louis) Killen</a></li>
+ <li><a href="../john.kirkpatrick/">John&nbsp;Kirkpatrick</a></li>
+ <li><a href="records/ladymaisery.html">Lady Maisery</a></li>
+ <li><a href="../lloyd/">A.L.&nbsp;Lloyd</a></li>
+ <li><a href="../ewan.maccoll/">Ewan&nbsp;MacColl</a></li>
+ <li><a href="records/magpielane.html">Magpie Lane</a></li>
+ <li><a href="records/brianpeters.html">Brian Peters</a></li>
+ <li><a href="records/karinepolwart.html">Karine Polwart</a></li>
+ <li><a href="records/emilyportman.html">Emily Portman, The&nbsp;Furrow&nbsp;Collective</a></li>
+ <li><a href="records/robertsandbarrand.html">John Roberts &amp; Tony&nbsp;Barrand</a></li>
+ <li><a href="records/jeannierobertson.html">Jeannie Robertson</a></li>
+ <li><a href="../tony.rose/">Tony&nbsp;Rose</a></li>
+ <li><a href="../leon.rosselson/">Leon&nbsp;Rosselson</a></li>
+ <li><a href="records/martinsimpson.html">Martin Simpson</a></li>
+<!--
+ <li><a href="../danny.spooner/">Danny&nbsp;Spooner</a></li>
+-->
+ <li><a href="../steeleye.span/">Steeleye&nbsp;Span</a></li>
+ <li><a href="../swarb/">Dave&nbsp;Swarbrick</a></li>
+ <li><a href="../june.tabor/">June&nbsp;Tabor</a></li>
+ <li><a href="records/johntams.html">John Tams, Home Service</a></li>
+ <li><a href="../cyril.tawney/">Cyril&nbsp;Tawney</a></li>
+ <li><a href="../joseph.taylor/">Joseph&nbsp;Taylor</a></li>
+ <li><a href="records/kathryntickell.html">Kathryn Tickell</a></li>
+<!--
+ <li><a href="records/stevetilston.html">Steve Tilston</a></li>
+-->
+ <li><a href="records/steveturner.html">Steve Turner</a></li>
+ <li><a href="../watersons/">The&nbsp;Watersons</a></li>
+ <li><a href="../wyndham-read/">Martyn&nbsp;Wyndham-Read</a></li>
+</ul></div>
+
+<!--
+<p class="comment">Note:
+I inherited the websites for some artists hosted here:
+Sandy Denny (merging it with mine) and Trevor Lucas in 1998
+from Willem Doornkamp;
+The Watersons and Martin Carthy in 2002 from Garry Gillard,
+and Ashley Hutchings, Joseph Taylor and the Kipper Family from Tony Rees via
+Garry.
+Thank you very much for your great work and for asking me to take over!<br>
+And thanks to Alistair Banfield too for his never-ending support and
+wealth of information.</p>
+-->
+</article>
+
+<article>
+<p class="reference albumgallery">
+<a href="records/christinaaldenandalexpatterson.html#safetravels"><img src="images/smallrec/safetravels_aldenpatterson.jpg" width="150" height="150" title="Christina Alden &amp; Alex Patterson: Safe Travels (Folk Cellar)" alt="Christina Alden &amp; Alex Patterson: Safe Travels (Folk Cellar)"></a>
+<a href="records/christinaaldenandalexpatterson.html#kitewing"><img src="images/smallrec/kitewing_kitewing.jpg" width="150" height="150" title="Kitewing: Kitewing (Kitewing)" alt="Kitewing: Kitewing (Kitewing)"></a>
+<a href="records/shackletontrio.html#fromthefloorboards"><img src="images/smallrec/fromthefloorboards_georgiashackleton_sq.jpg" width="150" height="150" title="Georgia Shackleton: From the Floorboards (Georgia Shackleton)" alt="Georgia Shackleton: From the Floorboards (Georgia Shackleton)"></a>
+<a href="records/norfolkbroads.html#yondergreengrove"><img src="images/smallrec/yondergreengrove_norfolkbroads.jpg" width="150" height="150" title="The Norfolk Broads: Yonder Green Grove (Norfolk Broads)" alt="The Norfolk Broads: Yonder Green Grove (Norfolk Broads)"></a>
+<!--
+<a href="records/theoldoutandhomer.html"><img src="images/smallrec/theoldoutandhomer_mtcd204.jpg" width="150" height="150" title="Various Artists: The Old Out and Homer (Musical Traditions MTCD204)" alt="Various Artists: The Old Out and Homer (Musical Traditions MTCD204)"></a>
+-->
+<a href="records/jessmorgan.html#everythingididlastyear"><img src="images/smallrec/everythingididlastyear_jessmorgan.jpg" width="150" height="150" title="Jess Morgan: Everything I Did Last Year (Amateur Boxer 586951 JESS)" alt="Jess Morgan: Everything I Did Last Year (Amateur Boxer 586951 JESS)"></a>
+<a href="../peter.bellamy/records/themaritimeenglandsuite.html"><img src="../peter.bellamy/images/smallrec/themaritimesuite_fecd284.jpg" width="150" height="150" title="Peter Bellamy: The Maritime Suite (Fellside FECD284)" alt="Peter Bellamy: The Maritime Suite (Fellside FECD284)"></a>
+<a href="records/elizadelf.html#intothewilderness"><img src="images/smallrec/intothewilderness_ejdcd001.jpg" width="150" height="150" title="Eliza Delf: Into the Wilderness (Peace in the Head EJDCD001)" alt="Eliza Delf: Into the Wilderness (Peace in the Head EJDCD001)"></a>
+</p>
+
+<h3>Norfolk Musicians</h3>
+
+<p class="comment">
+As this website is named in remembrance of Peter Bellamy after his first
+solo album,
+<cite><a href="../peter.bellamy/records/mainlynorfolk.html#mainlynorfolk">Mainly Norfolk</a></cite>,
+I thought I’d just list some Norfolk musicians featured here:</p>
+
+<div class="threecolumns"><ul>
+ <li><a href="records/christinaaldenandalexpatterson.html">Christina Alden &amp; Alex Patterson</a></li>
+ <li><a href="records/aldridgegoldsmith.html">Jimmy Aldridge &amp; Sid Goldsmith</a></li>
+ <li><a href="../peter.bellamy/">Peter Bellamy, The&nbsp;Young&nbsp;Tradition</a></li>
+ <li><a href="records/billybennington.html">Billy Bennington</a></li>
+ <li><a href="records/harrycox.html">Harry Cox</a></li>
+<!--
+ <li><a href="records/elizadelf.html">Eliza Delf</a></li>
+-->
+ <li><a href="records/rayhubbard.html">Ray Hubbard</a></li>
+ <li><a href="records/kipperfamily.html">The Kipper Family</a></li>
+ <li><a href="records/samlarner.html">Sam Larner</a></li>
+ <li><a href="records/jessmorgan.html">Jess Morgan</a></li>
+ <li><a href="records/norfolkbroads.html#inthevalleyoftheflowers">The Norfolk Broads</a></li>
+ <li><a href="records/walterpardon.html">Walter Pardon</a></li>
+ <li><a href="records/shackletontrio.html">The Shackleton Trio</a></li>
+</ul></div>
+</article>
+
+<article>
+<p class="reference albumgallery">
+<a href="../martin.carthy/records/alongtheroadforever.html"><img src="../martin.carthy/images/smallrec/alongtheroadforever_smabx1259.jpg" width="150" height="150" title="Martin Carthy: Along the Road Forever (Madfish SMABX1259)" alt="Martin Carthy: Along the Road Forever (Madfish SMABX1259)"></a>
+<a href="records/dickgaughan.html#revolution"><img src="images/smallrec/revolution_gr001.jpg" width="150" height="150" title="Dick Gaughan: R/evolution 1969/83 (Gaughan GR001)" alt="Dick Gaughan: R/evolution 1969/83 (Gaughan GR001)"></a>
+<a href="records/visionandrevision.html"><img src="images/smallrec/visionandrevision_txcd597_sq.jpg" width="150" height="150" title="Vision &amp; Revision: The First 80 Years of Topic Records (Topic TXCD597)" alt="Vision &amp; Revision: The First 80 Years of Topic Records (Topic TXCD597)"></a>
+<a href="records/stickinthewheel.html#englishfolkfieldrecordings2"><img src="images/smallrec/fromhere_sitw011.jpg" width="150" height="150" title="From Here: English Folk Field Recordings Volume2 (From Here SITW011)" alt="From Here: English Folk Field Recordings Volume2 (From Here SITW011)"></a>
+<!--
+<a href="records/destination.html"><img src="images/smallrec/destination_fecd282.jpg" width="150" height="150" title="Destination: Fellside Recordings 1976-2018 (Fellside FECD282)" alt="Destination: Fellside Recordings 1976-2018 (Fellside FECD282)"></a>
+-->
+<a href="records/thevoiceofthepeople.html#vol29"><img src="images/smallrec/thevoiceofthepeople_tscd679t_sq.jpg" width="150" height="150" title="It Was Mighty! (The Voice of the People Volume 29; Topic TSCD679T)" alt="It Was Mighty! (The Voice of the People Volume 29; Topic TSCD679T)"></a>
+<a href="records/oldsongsandbothyballads.html#vol1"><img src="images/smallrec/oldsongsandbothyballads_1.jpg" width="150" height="150" title="Here’s a Health to the Company (Old Songs &amp; Bothy Ballads Volume 1; Autumn Harvest AH 002)" alt="Here’s a Health to the Company (Old Songs &amp; Bothy Ballads Volume 1; Autumn Harvest AH 002)"></a>
+<a href="records/scottishtradition.html#vol5"><img src="images/smallrec/scottishtradition_cdtrax9005.jpg" width="150" height="150" title="Scottish Tradition Vol. 5: The Muckle Sangs (Greentrax CDTRAX 9005)" alt="Scottish Tradition Vol. 5: The Muckle Sangs (Greentrax CDTRAX 9005)"></a>
+<!--
+<a href="records/electricmuse.html#electricmuse"><img src="images/smallrec/electricmuse_1001.jpg" width="150" height="150" title="Electric Muse (Island/Transatlantic 1001)" alt="Electric Muse (Island/Transatlantic 1001)"></a>
+<a href="records/thefolksongsofbritain.html#vol4"><img src="images/smallrec/thefolksongsofbritain_tc1145.jpg" width="150" height="150" title="The Child Ballads 1 (Caedmon TC 1145)" alt="The Child Ballads 1 (Caedmon TC 1145)"></a>
+-->
+</p>
+
+<table class="twocolumns">
+<tr><td>
+<h3>Radio and Podcasts</h3>
+<ul>
+ <li><a class="external" href="https://www.celticmusicradio.net/">Celtic Music Radio</a></li>
+ <li><a class="external" href="https://www.efdss.org/about-us/folk-player/listen-classic-folk">Classic Folk With Mike Norris</a> (EFDSS)</li>
+<!--
+ <li><a class="external" href="https://www.mixcloud.com/FolkFindings/">Folk Findings</a></li>
+-->
+ <li><a class="external" href="https://soundcloud.com/firedrawnear">Fire Draw Near</a> by Ian Lynch</li>
+ <li><a class="external" href="https://folkfilespodcast.com/">Folk Files</a> by Olivia Harding</li>
+<!--
+ <li><a class="external" href="https://www.bbc.co.uk/programmes/b01phglj">Folk Show w/ Mark Radcliffe</a> (BBC Radio&nbsp;2)</li>
+-->
+ <li><a class="external" href="https://www.mixcloud.com/Genevieve_Tudor/">Genevieve Plays Folk</a> (Mixcloud)
+
+     </li>
+ <li><a class="external" href="https://www.youtube.com/@intheroud">In the Roud - A Folk Song Podcast</a> by Matt Quinn</li>
+<!--
+ <li><a class="external" href="https://uk.radio.net/podcast/in-the-roud-a-folk-song-podcast">In the Roud - A Folk Song Podcast</a> by Matt Quinn</li>
+ <li><a class="external" href="https://podcasts.apple.com/gb/podcast/in-the-roud-a-folk-song-podcast/id1740614759">In the Roud - A Folk Song Podcast</a> by Matt Quinn</li>
+ <li><a class="external" href="https://www.brooklandsradio.co.uk/mainlyfolk.html">Mainly Folk With Bev Harris</a></li>
+ <li><a class="external" href="https://www.mikehardingfolkshow.com/">Mike Harding Folk Show</a></li>
+-->
+
+ <li><a class="external" href="http://podwireless.com/">Podwireless</a> by Ian A. Anderson</li>
+ <li><a class="external" href="https://singyonder.co.uk/">Sing Yonder</a> by Karl Sinfield
+
+     </li>
+ <li><a class="external" href="https://www.mixcloud.com/Jimbobfagan/">Thank Goodness It’s Folk</a>
+
+     </li>
+<!--
+ <li><a class="external" href="https://www.bbc.co.uk/programmes/b00tlyrt">Travelling Folk</a> (BBC Radio Scotland)</li>
+-->
+ <li><a class="external" href="https://undertheleaves.podbean.com/">The Under the Leaves Podcast</a> by Eliza Carthy and Jon Boden</li>
+</ul>
+</td><td>
+<h3>More Links</h3>
+<ul>
+ <li>Jon Boden’s <a class="external" href="https://www.afolksongaday.com/">A&nbsp;Folk Song a Day</a> (2010&ndash;2011)</li>
+ <li>Andy Turner’s <a class="external" href="https://afolksongaweek.wordpress.com/">A&nbsp;Folk Song a Week</a> (2011&ndash;2016; continued)</li>
+<!--
+ <li>Maggie Boyle’s <a class="external" href="http://www.kitchensongs.org.uk/">Kitchen Songs</a> (2012)</li>
+-->
+ <li><a class="external" href="https://brightyoungfolk.com/">Bright Young Folk</a></li>
+<!--
+ <li><a class="external" href="https://www.englishfolkinfo.org.uk/">English Folk and Traditional Music on the Internet</a></li>
+ <li><a class="external" href="https://thefolkforecast.substack.com/">The Folk Forecast</a></li>
+-->
+ <li><a class="external" href="https://folking.com/reviews/">Folking.com Reviews</a></li>
+ <li><a class="external" href="https://folkopedia.info/">Folkopedia: A Wiki for the Folk Arts of England and Beyond</a></li>
+ <li><a class="external" href="https://folksongandmusichall.com/">Folk Song and Music Hall</a></li>
+<!--
+ <li><a class="external" href="https://www.folkworld.eu/">FolkWorld: The Online Music Magazine</a></li>
+ <li><a class="external" href="https://frootsmag.com/">fRoots magazine: Worldwide Roots Music Guide</a></li>
+ <li><a class="external" href="https://www.klofmag.com/">KLOF Magazine (formerly Folk Radio)</a></li>
+-->
+ <li><a class="external" href="https://events.livetoyourlivingroom.com/">Live to Your Living Room</a> concerts</li>
+<!--
+ <li><a class="external" href="https://www.livingtradition.co.uk/">The Living Tradition: British folk music magazine</a></li>
+-->
+
+ <li><a class="external" href="https://mustrad.co.uk/">Musical Traditions: Trad. Music Throughout the World</a></li>
+ <li><a class="external" href="https://search.library.wisc.edu/digital/AScottishVoicesColl">Scottish Voices</a> at University of Wisconsin-Madison</li>
+ <li><a class="external" href="https://www.tobarandualchais.co.uk/">Tobar an Dualchais/Kist o Riches</a></li>
+ <li><a class="external" href="https://groups.io/g/Tradsong">Traditional Song Forum</a> /
+     <a class="external" href="https://groups.io/g/Irish-Traditional-Song-Research">Irish Traditional Song Research</a></li>
+ <li><a class="external" href="https://www.vwml.org.uk/">Vaughan Williams Memorial Library</a></li>
+<!--
+ <li><a class="external" href="https://s.wayne.edu/warriorwomen/">The Warrior Woman Project</a> at Wayne State</li>
+-->
+</ul>
+</td></tr></table>
+</article>
+
+</article> <!-- id="mainArticle" -->
+<!-- Google Chrome in version 77 needed this up in nav.shtml -->
+<nav id="mainNav">
+<div id="folk">
+ <p class="reference"><a href="/folk/">English Folk Music</a>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/records/search.php">
+     <a style="display: inline;" class="records" href="/folk/records/">Discography</a>&nbsp;
+     <input class="navartistinput" type="text" name="artist" size="10" title="Enter artist, album name, or part of those; wildcard * at the end is allowed">
+     </form></li>
+   <li><a class="newreleases" href="/folk/records/newreleases.html">New Releases</a></li>
+
+
+   <li><a class="favourites" href="/folk/favourites.html">Favourite Albums of 2025</a></li>
+<!--
+   <li><a class="missing" href="/folk/missing.html">Looking for albums &amp; books</a></li>
+-->
+  </ul>
+  <ul>
+   <li><a class="fellside" href="/folk/records/fellside.html">Fellside Discography</a></li>
+   <li><a class="fledgling" href="/folk/records/fledgling.html">Fledg'ling Discography</a></li>
+   <li><a class="foresttracks" href="/folk/records/foresttracks.html">Forest Tracks Discography</a></li>
+   <li><a class="freereed" href="/folk/records/freereed.html">Free Reed Discography</a></li>
+   <li><a class="greentrax" href="/folk/records/greentrax.html">Greentrax Discography</a></li>
+   <li><a class="greenwichvillage" href="/folk/records/greenwichvillage.html">Greenwich Village Discogr.</a></li>
+   <li><a class="hudson" href="/folk/records/hudson.html">Hudson Discography</a></li>
+   <li><a class="kyloe" href="/folk/records/kyloe.html">Kyloe Discography</a></li>
+   <li><a class="leadertrailer" href="/folk/records/leadertrailer.html">Leader/Trailer Discography</a></li>
+   <li><a class="musicaltraditions" href="/folk/records/musicaltraditions.html">Musical Traditions Discogr.</a></li>
+   <li><a class="nomasters" href="/folk/records/nomasters.html">No Masters Discography</a></li>
+   <li><a class="rootbeat" href="/folk/records/rootbeat.html">RootBeat Discography</a></li>
+   <li><a class="springthyme" href="/folk/records/springthyme.html">Springthyme Discography</a></li>
+   <li><a class="topic" href="/folk/records/topic.html">Topic Discography: Records</a></li>
+   <li><a class="topiccd" href="/folk/records/topiccd.html">Topic Discography: CDs</a></li>
+   <li><a class="traditionbearers" href="/folk/records/traditionbearers.html">Tradition Bearers Discogr.</a></li>
+   <li><a class="traditionalsound" href="/folk/records/traditionalsound.html">Traditional Sound Discogr.</a></li>
+   <li><a class="veteran" href="/folk/records/veteran.html">Veteran Discography</a></li>
+   <li><a class="wildgoose" href="/folk/records/wildgoose.html">WildGoose Discography</a></li>
+  </ul>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/songs/search.php">
+     <a style="display: inline;" class="songs" href="/folk/songs/">Song Index</a>&nbsp;
+     <input class="navsonginput" type="text" name="song" size="10" title="Enter song title or part of it (wildcard * at the end is allowed) or 'Roud nn' or 'Child nn'">
+     </form></li>
+   <li><a class="child" href="/folk/songs/childindex.html">Child Index</a></li>
+   <li><a class="laws" href="/folk/songs/lawsindex.html">Laws Index</a></li>
+   <li><a class="books" href="/folk/books/">Bibliography</a></li>
+  </ul>
+  <ul>
+   <li><a class="latestchanges" href="/folk/latestchanges.html">Latest Changes</a></li>
+  </ul>
+ </div>
+
+
+
+
+
+<div id="links">
+<p class="reference">Related Sites</p>
+  <p style="text-align: center;"><a href="https://mustrad.co.uk/"><img src="/images/mustrad.gif" width="100" height="100" alt="Musical Traditions" title="Musical Traditions"></a></p>
+
+<hr>
+  <p style="text-align: center;"><a href="https://folkinfo.mainlynorfolk.info/"><img src="/images/folkinfo.gif" width="162" height="113" alt="folkinfo.org" title="folkinfo.org"></a></p>
+</div> 
+</nav>
+
+
+<footer id="pageFooter">
+<span id="contact"><a href="/folk/about.html">About / Impressum</a></span>
+<span id="updated">
+<!-- Server: -->
+<!-- echo var="SERVER_ADDR" -->
+<!-- ; -->
+Last updated
+Thu Jul 23, 2026
+by
+<script>
+<!--
+document.write('<a href="mailto:'+'reinhard'+unescape('%2E')+'zierke'+unescape('%40')+'mailbox'+unescape('%2E')+'org">'+'Reinhard Zierke<\/a>');
+-->
+</script>
+<noscript>Reinhard Zierke</noscript>
+</span> <!-- id="updated" -->
+</footer>
+
+
+</body>
+</html>

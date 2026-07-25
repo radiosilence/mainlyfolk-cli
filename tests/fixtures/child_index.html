@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/folk.css" type="text/css" media="all">
+<link rel="stylesheet" href="local.css" type="text/css" media="all">
+
+  <style>
+    #mainNav #folk a.songs {
+	background: white;
+    }
+    #mainNav #folk a.child {
+	background: #EEE8AA;	/* Pale Goldenrod */
+    }
+  </style>
+<title>Index of Child Ballads</title>
+</head>
+
+<body>
+<header id="pageHeader"><span id="head"></span>
+<a href="javascript:toggleNav();"><img id="togglenav" src="/images/menutoggle.png" alt="Hide navigation column" title="Hide navigation column"></a>
+<script>// <![CDATA[
+// check all or clear all checkboxes; argument is true|false
+// var showNav = window.innerWidth > 980;
+const mediaQuery = window.matchMedia('(min-width: 768px)');
+var showNav = mediaQuery.matches;
+function handleWindowChange(e) {
+   var button = document.getElementById("togglenav");
+   var mainnav = document.getElementById("mainNav");
+   if (! mainnav) {return;}
+   var body = document.getElementsByTagName("body")[0];
+   if (e.matches) {
+      button.style.display = "inline";
+      if (showNav) {
+         mainnav.style.display = "block";
+         body.style.gridTemplateColumns = "12rem 1fr";
+         button.title = button.alt = "Hide navigation column";
+      } else {
+         mainnav.style.display = "none";
+         body.style.gridTemplateColumns = "0 1fr";
+         button.title = button.alt = "Show navigation column";
+      }
+   } else {
+      mainnav.style.display = "block";
+      body.style.gridTemplateColumns = "1fr";
+      button.style.display = "none";
+   }
+}
+// Register event listener
+mediaQuery.addListener(handleWindowChange);
+// Initial check
+handleWindowChange(mediaQuery);
+// show or not show navigation
+function toggleNav() {
+   if (mediaQuery.matches) {
+      showNav = ! showNav;
+      handleWindowChange(mediaQuery);
+   }
+}
+// ]]></script>
+<a href="/peter.bellamy/records/mainlynorfolk.html#mainlynorfolk"><img src="/peter.bellamy/images/smallrec/mainlynorfolk_xtra1060.jpg" alt="Peter Bellamy: Mainly Norfolk" title="Peter Bellamy: Mainly Norfolk (Transatlantic XTRA 1060)"></a>
+<h1>Mainly Norfolk: English
+<!-- addtitle addition disabled as it's too wide for mobile devices -->
+
+Folk and Other Good Music</h1>
+
+
+
+
+</header>
+<!-- not include virtual="navigation.shtml" -->
+<article id="mainArticle">
+
+<article class="discography">
+<p class="reference">&gt;
+<a href="../index.html">Folk Music</a> &gt;
+<a href="index.html">Songs</a> &gt;
+<strong>Index of Child Ballads</strong>
+</p>
+<h1>Index of Child Ballads</h1>
+
+<p>This is a list of Child Ballads featured on this site.
+It is automagically generated from the title lines in the site’s song pages.</p>
+
+<p>References numbers are given to:</p>
+
+<ul>
+ <li>Steve Roud,
+     <cite><a class="external" href="https://archives.vwml.org/search/roud">Folk Song Index</a></cite>
+     (London, Vaughan Williams Memorial Library),</li>
+ <li>Francis James Child,
+     <cite><a href="../books/theenglishandscottishpopularballads.html">The English &amp; Scottish Popular Ballads</a></cite>
+     (1882-98, reprinted New York: Dover, 1965,
+     reprinted Northfield: Loomis House Press, 2001-2011),</li>
+<!--
+ <li>G. Malcolm Laws jnr.,
+     <cite><a href="../books/#laws:americanballadryfrombritishbroadsides">American Balladry from British Broadsides</a></cite>
+     (Philadelphia, American Folklore Society, 1957),</li>
+-->
+ <li>Patrick Shuldham-Shaw, Emily B. Lyle (editors),
+     <cite><a href="../books/#greig:folksongcollection">The Greig-Duncan Folk Song Collection</a></cite>
+     Volumes 1-8
+     (Aberdeen University Press, Mercat Press, 1981-2002).</li>
+</ul>
+
+<p>For a list of all known recordings of Child ballads see
+<!--Roel &lsquo;Halewijn&rsquo; van Dijk’s-->Dan Nedrud’s
+<a class="external" href="https://www.childballadrecordings.com/">Child Ballad Database (CBDB)</a>.</p>
+</article>
+<article class="discography">
+<p class="reference">&gt;
+<a href="../index.html">Folk Music</a> &gt;
+<a href="index.html">Songs</a> &gt;
+<strong>Child Ballads</strong></p>
+<ul class="plain">
+<li><a href="../../john.kirkpatrick/songs/riddleswiselyexpounded.html">Riddles Wisely Expounded / The Devil’s Nine Questions / Juniper, Gentle and Rosemary / Bow Down to the Bonny Broom / Lay the Bent to the Bonny Broom / The Three Sisters</a> <span class="comment">(Roud 161; Child 1)</span></li>
+<li><a href="../../martin.carthy/songs/theelfinknight.html">The Elfin Knight / Scarborough Fair / Whittingham Fair / Rosemary Fair</a> <span class="comment">(Roud 12; Child 2; G/D 2:329)</span></li>
+<li><a href="../../steeleye.span/songs/falseknightontheroad.html">The Fause Knight Upon the Road / False Knight on the Road</a> <span class="comment">(Roud 20; Child 3)</span></li>
+<li><a href="../../lloyd/songs/ladyisabelandtheelfknight.html">Lady Isabel and the Elf Knight / The Outlandish Knight / Sir John / False Lover John / May Colven / Castle by the Sea</a> <span class="comment">(Roud 21; Child 4; G/D 2:225; Henry H163)</span></li>
+<li><a href="gilbrenton.html">Gil Brenton / Lord Bangwell’s Adventure</a> <span class="comment">(Roud 22; Child 5)</span></li>
+<li><a href="../../martin.carthy/songs/willieslady.html">Willie’s Lady</a> <span class="comment">(Roud 220; Child 6; G/D 2:346)</span></li>
+<li><a href="earlbrand.html">Earl Brand / The Douglas Tragedy</a> <span class="comment">(Roud 23; Child 7; G/D 2:220)</span></li>
+<li><a href="erlinton.html">Erlinton</a> <span class="comment">(Roud 24; Child 8)</span></li>
+<li><a href="thefairflowerofnorthumberland.html">The Fair Flower of Northumberland</a> <span class="comment">(Roud 25; Child 9; G/D 6:1149)</span></li>
+<li><a href="../../frankie.armstrong/songs/thetwasisters.html">The Twa Sisters / The Two Sisters / The Bows of London / The Wind and Rain / The Berkshire Tragedy / Binnorie / Minorie</a> <span class="comment">(Roud 8; Child 10; G/D 2:213)</span></li>
+<li><a href="../../cyril.tawney/songs/thecruelbrother.html">The Cruel Brother / The Three Knights / The Rose and the Lily</a> <span class="comment">(Roud 26; Child 11)</span></li>
+<li><a href="../../martin.carthy/songs/lordrandall.html">Lord Randall / Henry My Son / What Had You for Supper / Poisoned Peas / Buried in Kilkenny</a> <span class="comment">(Roud 10; Child 12; G/D 2:209; Henry H814)</span></li>
+<li><a href="../../nic.jones/songs/edward.html">Edward / My Son David / Henry / What Put the Blood?</a> <span class="comment">(Roud 200; Child 13; TYG 35)</span></li>
+<li><a href="../../nic.jones/songs/thebonniebanksoffordie.html">The Bonnie Banks of Fordie / The Bonnie Banks of Airdrie / Babylon</a> <span class="comment">(Roud 27; Child 14; G/D 2:199)</span></li>
+<li><a href="../../tony.rose/songs/sheathandknife.html">Sheath and Knife</a> <span class="comment">(Roud 3960; Child 16)</span></li>
+<li><a href="../../tony.rose/songs/hindhorn.html">Hind Horn</a> <span class="comment">(Roud 28; Child 17; G/D 5:1022)</span></li>
+<li><a href="../../lloyd/songs/sirlionel.html">Sir Lionel / The Jovial Hunter of Bromsgrove / Bold Sir Rylas / Rackabello / Wild Hog in the Woods</a> <span class="comment">(Roud 29; Child 18)</span></li>
+<li><a href="../../steeleye.span/songs/kingorfeo.html">King Orfeo / Orfeo / Young Orphy</a> <span class="comment">(Roud 136; Child 19)</span></li>
+<li><a href="../../lloyd/songs/thecruelmother.html">The Cruel Mother / Down by the Greenwood Side / Fine Flowers in the Valley / The Lady of York</a> <span class="comment">(Roud 9; Child 20; G/D 2:193; TYG 73)</span></li>
+<li><a href="../../steeleye.span/songs/themaidandthepalmer.html">The Maid and the Palmer / The Well Below the Valley</a> <span class="comment">(Roud 2335; Child 21)</span></li>
+<li><a href="../../steeleye.span/songs/stephen.html">Saint Stephen and Herod</a> <span class="comment">(Roud 3963; Child 22)</span></li>
+<li><a href="judas.html">Judas</a> <span class="comment">(Roud 3964; Child 23)</span></li>
+<li><a href="../../lloyd/songs/thebanksofgreenwillow.html">The Banks of Green Willow / The Green Banks of Yarrow / Bonnie Annie</a> <span class="comment">(Roud 172; Child 24; G/D 6:1225)</span></li>
+<li><a href="../../june.tabor/songs/willieslykewake.html">Willie’s Lyke-Wake / If My Love Loves Me / Amang the Blue Flowers and the Yellow</a> <span class="comment">(Roud 30; Child 25; G/D 4:843)</span></li>
+<li><a href="../../cara/songs/threeravens.html">The Three Ravens</a> <span class="comment">(Roud 5; Child 26)</span></li>
+<li><a href="../../steeleye.span/songs/twacorbies.html">Twa Corbies / Two Ravens</a> <span class="comment">(Roud 5; Child 26)</span></li>
+<li><a href="../../steeleye.span/songs/whummilbore.html">Whummil Bore</a> <span class="comment">(Roud 3722; Child 27)</span></li>
+<li><a href="burdellenandyoungtamlane.html">Burd Ellen &amp; Young Tamlane</a> <span class="comment">(Roud 3962; Child 28)</span></li>
+<li><a href="../../steeleye.span/songs/theboyandthemantle.html">The Boy and the Mantle</a> <span class="comment">(Roud 3961; Child 29)</span></li>
+<li><a href="../../steeleye.span/songs/kinghenry.html">King Henry</a> <span class="comment">(Roud 3967; Child 32)</span></li>
+<li><a href="../../martin.carthy/songs/kingknapperty.html">Kempy Kay / King Knapperty</a> <span class="comment">(Roud 32; Child 33; G/D 7:1505)</span></li>
+<li><a href="../../frankie.armstrong/songs/kempowyne.html">Kemp Owyne / Kemp Owen</a> <span class="comment">(Roud 3912, 3176; Child 34)</span></li>
+<li><a href="../../steeleye.span/songs/alisongross.html">Alison Gross / Alison Cross</a> <span class="comment">(Roud 3212; Child 35)</span></li>
+<li><a href="thelailyworm.html">The Laily Worm and the Mackerel of the Sea</a> <span class="comment">(Roud 3968; Child 36)</span></li>
+<li><a href="../../steeleye.span/songs/thomastherhymer.html">Thomas the Rhymer / True Thomas</a> <span class="comment">(Roud 219; Child 37)</span></li>
+<li><a href="../../steeleye.span/songs/theweeweeman.html">The Wee Wee Man</a> <span class="comment">(Roud 2865; Child 38)</span></li>
+<li><a href="../../sandy.denny/songs/tamlin.html">Tam Lin</a> <span class="comment">(Roud 35; Child 39; G/D 2:330)</span></li>
+<li><a href="../../steeleye.span/songs/elfcall.html">The Queen of Elfan’s Nourice / Elf Call</a> <span class="comment">(Roud 3723; Child 40; G/D 2:328)</span></li>
+<li><a href="hindetin.html">Hind Etin / Young Hastings</a> <span class="comment">(Roud 33; Child 41; G/D 2:331)</span></li>
+<li><a href="../../frankie.armstrong/songs/clerkcolvill.html">Clerk Colven / Clerk Colvill</a> <span class="comment">(Roud 147; Child 42)</span></li>
+<li><a href="../../lloyd/songs/thebroomfieldhill.html">The Broomfield Hill / The Broomfield Wager / A Wager, a Wager</a> <span class="comment">(Roud 34; Child 43; G/D 2:322; Henry H135)</span></li>
+<li><a href="../../lloyd/songs/thetwomagicians.html">The Two Magicians</a> <span class="comment">(Roud 1350; Child 44; G/D 2:334)</span></li>
+<li><a href="kingjohnandtheabbotofcanterbury.html">King John and the Bishop / King John and the Abbot of Canterbury</a> <span class="comment">(Roud 302; Child 45; G/D 2:281)</span></li>
+<li><a href="../../steeleye.span/songs/captainwedderburnscourtship.html">Captain Wedderburn’s Courtship / Song of the Riddles</a> <span class="comment">(Roud 36; Child 46; G/D 4:842; Henry H681)</span></li>
+<li><a href="proudladymargaret.html">Proud Lady Margaret / The Knicht of Archerdale</a> <span class="comment">(Roud 37; Child 47; G/D 2:336)</span></li>
+<li><a href="../../martin.carthy/songs/deathofyoungandrew.html">Death of Young Andrew</a> <span class="comment">(Roud 6740; Child 48)</span></li>
+<li><a href="../../peter.bellamy/songs/thetwobrothers.html">The Two Brothers / Two Pretty Boys / The Rolling of the Stones</a> <span class="comment">(Roud 38; Child 49)</span></li>
+<li><a href="../../june.tabor/songs/thebonnyhind.html">The Bonny Hind</a> <span class="comment">(Roud 205; Child 50)</span></li>
+<li><a href="../../martin.carthy/songs/liziewan.html">Lizie Wan / Lucy Wan / Fair Lizzie</a> <span class="comment">(Roud 234; Child 51)</span></li>
+<li><a href="thekingsdochterladyjean.html">The King’s Dochter Lady Jean / Fair Rosie Ann / Queen Jane</a> <span class="comment">(Roud 39; Child 52; G/D 7:1395)</span></li>
+<li><a href="../../joseph.taylor/songs/lordbateman.html">Lord Bateman / Young Beichan</a> <span class="comment">(Roud 40; Child 53L; G/D 5:1023; Henry H470)</span></li>
+<li><a href="../../lloyd/songs/thecherrytreecarol.html">The Cherry Tree Carol</a> <span class="comment">(Roud 453; Child 54; G/D 2:327)</span></li>
+<li><a href="../../peter.bellamy/songs/thecarnalandthecrane.html">The Carnal and the Crane</a> <span class="comment">(Roud 306; Child 55)</span></li>
+<li><a href="../../watersons/songs/herodandthecock.html">Herod and the Cock / King Herod and the Cock / King Pharim</a> <span class="comment">(Roud 306; Child 55)</span></li>
+<li><a href="../../peter.bellamy/songs/divesandlazarus.html">Dives and Lazarus</a> <span class="comment">(Roud 477; Child 56)</span></li>
+<li><a href="../../steeleye.span/songs/brownrobynsconfession.html">Brown Robyn’s Confession</a> <span class="comment">(Roud 3882; Child 57)</span></li>
+<li><a href="../../sandy.denny/songs/sirpatrickspens.html">Sir Patrick Spens</a> <span class="comment">(Roud 41; Child 58; G/D 1:17)</span></li>
+<li><a href="siraldingar.html">Sir Aldingar</a> <span class="comment">(Roud 3969; Child 59)</span></li>
+<li><a href="sircolvin.html">Sir Cawline / Sir Colvin</a> <span class="comment">(Roud 479; Child 61)</span></li>
+<li><a href="../../peter.bellamy/songs/fairannie.html">Fair Annie / Rosanna</a> <span class="comment">(Roud 42; Child 62; G/D 6:1161; Henry H126)</span></li>
+<li><a href="../../frankie.armstrong/songs/childwaters.html">Child Waters / Fair Ellen / Fair Margaret</a> <span class="comment">(Roud 43; Child 63; G/D 6:1229)</span></li>
+<li><a href="fairjanet.html">Fair Janet</a> <span class="comment">(Roud 44; Child 64; G/D 6:1100)</span></li>
+<li><a href="../../peter.bellamy/songs/ladymaisry.html">Lady Maisry / Bonnie Susie Cleland / The Burning</a> <span class="comment">(Roud 45; Child 65)</span></li>
+<li><a href="../../lloyd/songs/glasgerion.html">Glasgerion / Glenkindie / Jack Orion</a> <span class="comment">(Roud 145; Child 67)</span></li>
+<li><a href="../../tony.rose/songs/younghunting.html">Young Hunting / Earl Richard / Love Henry / The Proud Girl</a> <span class="comment">(Roud 47; Child 68)</span></li>
+<li><a href="../../june.tabor/songs/clerksaunders.html">Clerk Saunders</a> <span class="comment">(Roud 3855; Child 69)</span></li>
+<li><a href="willieandladymaisry.html">Willie and Lady Maisry / William and Lady Marjorie</a> <span class="comment">(Roud 198; Child 70)</span></li>
+<li><a href="theclerkstwasonsoowsenford.html">The Clerk’s Twa Sons o’ Owsenford</a> <span class="comment">(Roud 3902; Child 72; G/D 8:1931)</span></li>
+<li><a href="../../copperfamily/songs/lordthomasandfaireleanor.html">Lord Thomas and Fair Eleanor / Lord Thomas and Fair Annet / The Dun Broon Bride</a> <span class="comment">(Roud 4; Child 73; G/D 2:212)</span></li>
+<li><a href="../../lloyd/songs/fairmargaretandsweetwilliam.html">Fair Margaret and Sweet William / Lady Margaret and Sweet William</a> <span class="comment">(Roud 253; Child 74; G/D 2:337)</span></li>
+<li><a href="../../peter.bellamy/songs/lordlovel.html">Lord Lovel</a> <span class="comment">(Roud 48; Child 75; G/D 6:1232)</span></li>
+<li><a href="../../shirley.collins/songs/thelassofrochroyal.html">The Lass of Roch Royal / Lord Gregory / Maid of Aughrim</a> <span class="comment">(Roud 49; Child 76; G/D 6:1226)</span></li>
+<li><a href="../../louis.killen/songs/sweetwilliamsghost.html">Sweet William’s Ghost / Lady Margaret and Sweet William</a> <span class="comment">(Roud 50; Child 77)</span></li>
+<li><a href="../../lloyd/songs/theunquietgrave.html">The Unquiet Grave / Cold Blows the Wind / One True Love</a> <span class="comment">(Roud 51; Child 78)</span></li>
+<li><a href="../../steeleye.span/songs/thewifeofusherswell.html">The Wife of Usher’s Well</a> <span class="comment">(Roud 196; Child 79)</span></li>
+<li><a href="../../sandy.denny/songs/mattygroves.html">Little Musgrave and Lady Barnard / Matty Groves</a> <span class="comment">(Roud 52; Child 81)</span></li>
+<li><a href="bonnybirdy.html">The Bonny Birdy</a> <span class="comment">(Roud 3972; Child 82)</span></li>
+<li><a href="../../martin.carthy/songs/childmaurice.html">Child Maurice / Child Morris / Gil Morice / Bill Norrie</a> <span class="comment">(Roud 53; Child 83; G/D 2:214)</span></li>
+<li><a href="../../shirley.collins/songs/barbaraallen.html">Barbara Allen / Barbary Allen / Barbary Ellen</a> <span class="comment">(Roud 54; Child 84; G/D 6:1193; Henry H236)</span></li>
+<li><a href="../../lloyd/songs/georgecollins.html">Lady Alice / George Collins</a> <span class="comment">(Roud 147; Child 85)</span></li>
+<li><a href="youngbenjie.html">Young Benjie</a> <span class="comment">(Roud 3911; Child 86)</span></li>
+<li><a href="princerobert.html">Prince Robert / Lord Abore and Mary Flynn / Harry Saunders</a> <span class="comment">(Roud 55; Child 87)</span></li>
+<li><a href="../../june.tabor/songs/youngjohnstone.html">Young Johnstone</a> <span class="comment">(Roud 56; Child 88; G/D 8:1929)</span></li>
+<li><a href="fausefoodrage.html">Fause Foodrage / East Muir King</a> <span class="comment">(Roud 57; Child 89; G/D 8:1930)</span></li>
+<li><a href="jellongrame.html">Jellon Grame</a> <span class="comment">(Roud 58; Child 90; G/D 2:198)</span></li>
+<li><a href="../../june.tabor/songs/thefairmaidofwallington.html">Fair Mary of Wallington / The Fair Maid of Wallington / Bonny Earl of Livingston</a> <span class="comment">(Roud 59; Child 91)</span></li>
+<li><a href="../../lloyd/songs/lamkin.html">Lamkin / Long Lankin / Cruel Lincoln</a> <span class="comment">(Roud 6; Child 93; G/D 2:187; Henry H735)</span></li>
+<li><a href="../../june.tabor/songs/youngwaters.html">Young Waters</a> <span class="comment">(Roud 2860; Child 94)</span></li>
+<li><a href="../../lloyd/songs/themaidfreedfromthegallows.html">The Maid Freed From the Gallows / The Prickly Bush / The Prickle-Holly Bush / Prickle-Eye Bush / The Golden Ball</a> <span class="comment">(Roud 144; Child 95; G/D 2:248)</span></li>
+<li><a href="thegaygoshawk.html">The Gay Goshawk</a> <span class="comment">(Roud 61; Child 96)</span></li>
+<li><a href="brownrobin.html">Brown Robin</a> <span class="comment">(Roud 62; Child 97; G/D 8:1932)</span></li>
+<li><a href="../../martin.carthy/songs/brownadam.html">Brown Adam</a> <span class="comment">(Roud 482; Child 98; G/D 5:994)</span></li>
+<li><a href="johniescot.html">Johnie Scot / Johnny Scott</a> <span class="comment">(Roud 63; Child 99; G/D 5:1013; Henry H736)</span></li>
+<li><a href="../../anne.briggs/songs/willieowinsbury.html">Willie o’ Winsbury / Tom the Barber / There Was a Lady Lived in the West</a> <span class="comment">(Roud 64; Child 100; G/D 5:999; Henry H221)</span></li>
+<li><a href="willieodouglasdale.html">Willie o Douglas Dale</a> <span class="comment">(Roud 65; Child 101; G/D 5:1010)</span></li>
+<li><a href="../../bellowhead/songs/thebirthofrobinhood.html">Willie and Earl Richard’s Daughter / The Birth of Robin Hood</a> <span class="comment">(Roud 3910; Child 102)</span></li>
+<li><a href="../../martin.carthy/songs/princeheathen.html">Prince Heathen</a> <span class="comment">(Roud 3336; Child 104; G/D 7:1497)</span></li>
+<li><a href="thebailiffsdaughterofislington.html">The Bailiff’s Daughter of Islington</a> <span class="comment">(Roud 483; Child 105; G/D 1:168)</span></li>
+<li><a href="../../martin.carthy/songs/thefamousflowerofservingmen.html">The Famous Flower of Serving Men / The Lament of the Border Widow</a> <span class="comment">(Roud 199; Child 106; G/D 1:163)</span></li>
+<li><a href="tompotts.html">Tom Potts</a> <span class="comment">(Roud 66; Child 109)</span></li>
+<li><a href="../../lloyd/songs/theknightandtheshepherdsdaughter.html">The Knight and the Shepherd’s Daughter / Knight William and the Shepherd’s Daughter / The Shepherd’s Daughter / The Royal Forester</a> <span class="comment">(Roud 67; Child 110; G/D 7:1465)</span></li>
+<li><a href="crowandpie.html">Crow and Pie</a> <span class="comment">(Roud 3975; Child 111)</span></li>
+<li><a href="../../eliza.carthy/songs/thebaffledknight.html">The Baffled Knight / The Shepherd Lad / Blow the Winds / The Dew Is on the Grass</a> <span class="comment">(Roud 11; Child 112; G/D 2:301)</span></li>
+<li><a href="../../steeleye.span/songs/greatsilkieofsuleskerry.html">The Great Selkie of Sule Skerry / The Great Silkie of Sule Skerry</a> <span class="comment">(Roud 197; Child 113)</span></li>
+<li><a href="../../june.tabor/songs/johnnyobredislee.html">Johnie Cock / Johnny the Brine / Johnny o’ Bredislee</a> <span class="comment">(Roud 69; Child 114; G/D 2:250)</span></li>
+<li><a href="agestofrobynhode.html">A Gest of Robyn Hode</a> <span class="comment">(Roud 70; Child 117)</span></li>
+<li><a href="robinhoodsdeath.html">Robin Hood’s Death</a> <span class="comment">(Roud 3299; Child 120)</span></li>
+<li><a href="thejollypinderofwakefield.html">The Jolly Pinder of Wakefield</a> <span class="comment">(Roud 3981; Child 124)</span></li>
+<li><a href="robinhoodandlittlejohn.html">Robin Hood and Little John</a> <span class="comment">(Roud 1322; Child 125)</span></li>
+<li><a href="../../lloyd/songs/robinhoodandthetanner.html">Robin Hood and the Tanner</a> <span class="comment">(Roud 332; Child 126)</span></li>
+<li><a href="../../lloyd/songs/theboldpedlarandrobinhood.html">The Bold Pedlar and Robin Hood / Robin Hood and the (Bold) Pedlar / Gamble Gold (Robin Hood)</a> <span class="comment">(Roud 333; Child 132)</span></li>
+<li><a href="robinhoodsprogresstonottingham.html">Robin Hood’s Progress to Nottingham / Robin Hood and the Fifteen Foresters</a> <span class="comment">(Roud 1790; Child 139)</span></li>
+<li><a href="../../john.kirkpatrick/songs/robinhoodandthewidowsthreesons.html">Robin Hood and the Widow’s Three Sons / Robin Hood Rescuing Three Squires</a> <span class="comment">(Roud 71; Child 140; G/D 2:243)</span></li>
+<li><a href="../../lloyd/songs/robinhoodandthebishopofhereford.html">Robin Hood and the Bishop of Hereford</a> <span class="comment">(Roud 2338; Child 144)</span></li>
+<li><a href="../../lloyd/songs/sirhughorthejewsdaughter.html">Sir Hugh or the Jew’s Daughter / Little Sir Hugh / The Jews’s Garden</a> <span class="comment">(Roud 73; Child 155)</span></li>
+<li><a href="../../steeleye.span/songs/queeneleanorsconfession.html">Queen Eleanor’s Confession</a> <span class="comment">(Roud 74; Child 156; G/D 2:208)</span></li>
+<li><a href="gudewallace.html">Gude Wallace</a> <span class="comment">(Roud 75; Child 157)</span></li>
+<li><a href="../../june.tabor/songs/thebattleofotterburn.html">The Battle of Otterburn</a> <span class="comment">(Roud 3293; Child 161)</span></li>
+<li><a href="chevychase.html">Chevy Chase / The Hunting of the Cheviot</a> <span class="comment">(Roud 223; Child 162)</span></li>
+<li><a href="thebattleofharlaw.html">The Battle of Harlaw</a> <span class="comment">(Roud 2861; Child 163; G/D 1:112)</span></li>
+<li><a href="../../peter.bellamy/songs/sirandrewbarton.html">Sir Andrew Barton</a> <span class="comment">(Roud 104; Child 167)</span></li>
+<li><a href="floddenfield.html">Flodden Field</a> <span class="comment">(Roud 2862; Child 168)</span></li>
+<li><a href="../../steeleye.span/songs/johnniearmstrong.html">Johnnie Armstrong</a> <span class="comment">(Roud 76; Child 169)</span></li>
+<li><a href="../../cyril.tawney/songs/thedeathofqueenjane.html">The Death of Queen Jane</a> <span class="comment">(Roud 77; Child 170; G/D 3:693)</span></li>
+<li><a href="maryhamilton.html">Mary Hamilton / The Four Marys</a> <span class="comment">(Roud 79; Child 173; G/D 2:195)</span></li>
+<li><a href="edomogordon.html">Edom o Gordon</a> <span class="comment">(Roud 80; Child 178; G/D 2:231)</span></li>
+<li><a href="therookhoperyde.html">The Rookhope Ryde</a> <span class="comment">(Roud 4008; Child 179)</span></li>
+<li><a href="thebonnieearlofmoray.html">The Bonny Earl of Moray</a> <span class="comment">(Roud 334; Child 181)</span></li>
+<li><a href="thelairdoflogie.html">The Laird of Logie / Young Logie</a> <span class="comment">(Roud 81; Child 182; G/D 2:247)</span></li>
+<li><a href="../../june.tabor/songs/burningofauchindoon.html">Burning of Auchindoon / Willie Macintosh</a> <span class="comment">(Roud 4010; Child 183)</span></li>
+<li><a href="dickothecow.html">Dick o the Cow / Dick of the Broom</a> <span class="comment">(Roud 4012; Child 185)</span></li>
+<li><a href="kinmontwillie.html">Kinmont Willie</a> <span class="comment">(Roud 4013; Child 186)</span></li>
+<li><a href="jockotheside.html">Jock o’ the Side</a> <span class="comment">(Roud 82; Child 187)</span></li>
+<li><a href="../../tony.rose/songs/archieocawfield.html">Archie o’ Cawfield / Bold Archer / The Escape of Old John Webb</a> <span class="comment">(Roud 83; Child 188; G/D 2:244)</span></li>
+<li><a href="hobienoble.html">Hobie Noble</a> <span class="comment">(Roud 4014; Child 189)</span></li>
+<li><a href="jamietelferofthefairdodhead.html">Jamie Telfer of the Fair Dodhead</a> <span class="comment">(Roud 3364; Child 190)</span></li>
+<li><a href="../../june.tabor/songs/hughiegraeme.html">Hughie Graeme</a> <span class="comment">(Roud 84; Child 191; G/D 2:271)</span></li>
+<li><a href="../../martin.carthy/songs/lochmabenharper.html">Lochmaben Harper / The Blind Harper / The Wanton Brown</a> <span class="comment">(Roud 85; Child 192; G/D 2:270)</span></li>
+<li><a href="thedeathofparcyreed.html">The Death of Parcy Reed</a> <span class="comment">(Roud 335; Child 193)</span></li>
+<li><a href="thelairdofwariston.html">The Laird of Wariston</a> <span class="comment">(Roud 3876; Child 194)</span></li>
+<li><a href="../../june.tabor/songs/lordmaxwellslastgoodnight.html">Lord Maxwell’s Last Goodnight</a> <span class="comment">(Roud 4015; Child 195)</span></li>
+<li><a href="../../louis.killen/songs/thebonnyhouseofairlie.html">The Bonny House of Airlie</a> <span class="comment">(Roud 794; Child 199; G/D 2:233)</span></li>
+<li><a href="../../shirley.collins/songs/thegypsyladdie.html">The Gypsy Laddie / Seven Yellow Gipsies / Raggle Taggle Gipsies / Gypsy Davey / Black Jack Davy / Gypsy Rover</a> <span class="comment">(Roud 1; Child 200; G/D 2:278; Henry H124)</span></li>
+<li><a href="../../martin.carthy/songs/betsybellandmarygray.html">Betsy Bell and Mary Gray</a> <span class="comment">(Roud 237; Child 201; G/D 6:1257)</span></li>
+<li><a href="thebaronofbrackley.html">The Baron of Brackley</a> <span class="comment">(Roud 4017; Child 203; G/D 2:234)</span></li>
+<li><a href="../../june.tabor/songs/walywaly.html">Waly Waly / James Douglas / Cockleshells</a> <span class="comment">(Roud 87; Child 204)</span></li>
+<li><a href="thebattleofbothwellbridge.html">The Battle of Bothwell Bridge</a> <span class="comment">(Roud 337; Child 206)</span></li>
+<li><a href="../../shirley.collins/songs/lordderwentwater.html">Lord Derwentwater / Lord Allenwater</a> <span class="comment">(Roud 89; Child 208)</span></li>
+<li><a href="../../lloyd/songs/geordie.html">Geordie / Georgie</a> <span class="comment">(Roud 90; Child 209; G/D 2:249)</span></li>
+<li><a href="../../nic.jones/songs/bonniegeorgecampbell.html">Bonnie George Campbell / Bonnie James Campbell</a> <span class="comment">(Roud 338; Child 210)</span></li>
+<li><a href="../../frankie.armstrong/songs/thedukeofaholesnurse.html">The Duke of Athole’s Nurse / Little Duke Arthur’s Nurse</a> <span class="comment">(Roud 3393; Child 212; G/D 1:160)</span></li>
+<li><a href="../../steeleye.span/songs/sirjamestherose.html">Sir James the Rose</a> <span class="comment">(Roud 2274; Child 213; G/D 2:235)</span></li>
+<li><a href="thedowiedensofyarrow.html">The Dowie Dens of Yarrow</a> <span class="comment">(Roud 13; Child 214; G/D 2:215)</span></li>
+<li><a href="../../june.tabor/songs/rarewilliedrownedinyarrow.html">Rare Willie’s Drowned in Yarrow</a> <span class="comment">(Roud 206; Child 215; G/D 6:1227)</span></li>
+<li><a href="../../nic.jones/songs/thedrownedlovers.html">Clyde’s Water / The Drowned Lovers</a> <span class="comment">(Roud 91; Child 216; G/D 6:1231)</span></li>
+<li><a href="../../watersons/songs/thebroomofcowdenknowes.html">The Broom of Cowdenknowes / Bonny May</a> <span class="comment">(Roud 92; Child 217; G/D 4:838)</span></li>
+<li><a href="../../martin.carthy/songs/thefalseloverwonback.html">The False Lover Won Back / Honey for the Bee / Young John / The Sun Shines High</a> <span class="comment">(Roud 201; Child 218; G/D 5:974)</span></li>
+<li><a href="../../shirley.collins/songs/proudmaisrie.html">Proud Maisrie / The Gardener / The Gardener Child</a> <span class="comment">(Roud 339; Child 219; G/D 4:840)</span></li>
+<li><a href="../../martin.carthy/songs/bonnylassofanglesey.html">Bonny Lass of Anglesey</a> <span class="comment">(Roud 3931; Child 220)</span></li>
+<li><a href="../../martin.carthy/songs/thegreenwedding.html">The Green Wedding / Katherine Jaffray / There Was a Lord in Edinburgh</a> <span class="comment">(Roud 93; Child 221; G/D 5:1024)</span></li>
+<li><a href="bonnybabylivingston.html">Bonny Baby Livingston</a> <span class="comment">(Roud 100; Child 222; G/D 6:1264)</span></li>
+<li><a href="../../sandy.denny/songs/eppiemoray.html">Eppie Moray / Eppie Morrie</a> <span class="comment">(Roud 2583; Child 223)</span></li>
+<li><a href="robroy.html">Rob Roy</a> <span class="comment">(Roud 340; Child 225)</span></li>
+<li><a href="lizzielindsay.html">Leezie Lindsay / Lizzie Lindsay</a> <span class="comment">(Roud 94; Child 226; G/D 4:858)</span></li>
+<li><a href="glasgowpeggy.html">Glasgow Peggy</a> <span class="comment">(Roud 95; Child 228; G/D 4:850)</span></li>
+<li><a href="theearloferrol.html">The Earl o Errol</a> <span class="comment">(Roud 96; Child 231; G/D 7:1366)</span></li>
+<li><a href="../../shirley.collins/songs/richiestory.html">Richie Story / The Earl of Weymss</a> <span class="comment">(Roud 97; Child 232; G/D 5:1051)</span></li>
+<li><a href="andrewlammie.html">Andrew Lammie / Mill o’ Tifty’s Annie</a> <span class="comment">(Roud 98; Child 233; G/D 5:1018)</span></li>
+<li><a href="../../june.tabor/songs/theearlofaboyne.html">The Earl of Aboyne</a> <span class="comment">(Roud 99; Child 235; G/D 6:1159)</span></li>
+<li><a href="thelairdodrum.html">The Laird o’ Drum</a> <span class="comment">(Roud 247; Child 236; G/D 4:835)</span></li>
+<li><a href="../../shirley.collins/songs/glenlogie.html">Glenlogie / Jean of Bethelnie</a> <span class="comment">(Roud 101; Child 238; G/D 5:973)</span></li>
+<li><a href="../../nic.jones/songs/annachiegordon.html">Annachie Gordon</a> <span class="comment">(Roud 102; Child 239; G/D 5:1021)</span></li>
+<li><a href="therantinladdie.html">The Rantin Laddie</a> <span class="comment">(Roud 103; Child 240; G/D 5:976)</span></li>
+<li><a href="../../lloyd/songs/thedemonlover.html">The Demon Lover / The House Carpenter</a> <span class="comment">(Roud 14; Child 243; G/D 2:332)</span></li>
+<li><a href="../../martin.carthy/songs/jameshatley.html">James Hatley</a> <span class="comment">(Roud 4022; Child 244)</span></li>
+<li><a href="../../june.tabor/songs/youngallan.html">Young Allan</a> <span class="comment">(Roud 242; Child 245; G/D 2:326)</span></li>
+<li><a href="redesdaleandwisewilliam.html">Redesdale and Wise William</a> <span class="comment">(Roud 243; Child 246)</span></li>
+<li><a href="prettycrowinchicken.html">Pretty Crowin’ Chicken</a> <span class="comment">(Roud 179; Child 248)</span></li>
+<li><a href="../../lloyd/songs/thegreycock.html">The Grey Cock</a> <span class="comment">(Roud 179; Child 248)</span></li>
+<li><a href="../../lloyd/songs/theloversghost.html">The Lover’s Ghost</a> <span class="comment">(Roud 179; Child 248)</span></li>
+<li><a href="../../steeleye.span/songs/flyupmycock.html">Fly Up My Cock / True Lover John</a> <span class="comment">(Roud 179; Child 248; Henry H699)</span></li>
+<li><a href="../../ewan.maccoll/songs/auldmatrons.html">Auld Matrons</a> <span class="comment">(Roud 3915; Child 249)</span></li>
+<li><a href="../../lloyd/songs/henrymartin.html">Henry Martin / The Lofty Tall Ship</a> <span class="comment">(Roud 104; Child 250)</span></li>
+<li><a href="../../ewan.maccoll/songs/langjohnnymore.html">Lang Johnny More / Long John, Old John and Jackie North</a> <span class="comment">(Roud 3100; Child 251; G/D 2:246)</span></li>
+<li><a href="thekitchieboy.html">The Kitchie Boy</a> <span class="comment">(Roud 105; Child 252; G/D 5:1048)</span></li>
+<li><a href="thomasofyonderdale.html">Thomas of Yonderdale</a> <span class="comment">(Roud 3890; Child 253)</span></li>
+<li><a href="williesfatalvisit.html">Willie’s Fatal Visit</a> <span class="comment">(Roud 244; Child 255)</span></li>
+<li><a href="myluveshelives.html">Alison and Willie / My Luve She Lives</a> <span class="comment">(Roud 245; Child 256)</span></li>
+<li><a href="broughtywas.html">Broughty Wa’s / Burd Helen</a> <span class="comment">(Roud 108; Child 258)</span></li>
+<li><a href="lordthomasandladymargaret.html">Lord Thomas and Lady Margaret</a> <span class="comment">(Roud 109; Child 260)</span></li>
+<li><a href="theknightsghost.html">The Knight’s Ghost</a> <span class="comment">(Roud 3889; Child 265)</span></li>
+<li><a href="../../steeleye.span/songs/heiroflinne.html">The Heir of Linne</a> <span class="comment">(Roud 111; Child 267; G/D 2:273)</span></li>
+<li><a href="../../frankie.armstrong/songs/ladydiamond.html">Lady Diamond / Lady Dysie</a> <span class="comment">(Roud 112; Child 269; G/D 6:1224)</span></li>
+<li><a href="theearlofmarsdaughter.html">The Earl of Mar’s Daughter</a> <span class="comment">(Roud 3879; Child 270)</span></li>
+<li><a href="thelordoflornandthefalsestewart.html">The Lord of Lorn and the False Steward</a> <span class="comment">(Roud 113; Child 271)</span></li>
+<li><a href="../../watersons/songs/thesuffolkmiracle.html">The Suffolk Miracle / The Holland Handkerchief / The Lover’s Ghost</a> <span class="comment">(Roud 246; Child 272; Henry H217)</span></li>
+<li><a href="../../steeleye.span/songs/ourgoodman.html">Our Goodman / Four Nights Drunk / Coming Home Late / Shickered As He Could Be</a> <span class="comment">(Roud 114; Child 274; G/D 7:1460; Henry H21ab)</span></li>
+<li><a href="../../tony.rose/songs/getupandbarthedoor.html">Get Up and Bar the Door / The Barring of the Door / John Blunt</a> <span class="comment">(Roud 115; Child 275; G/D 2:321)</span></li>
+<li><a href="../../lloyd/songs/thefriarinthewell.html">The Friar in the Well / The Parson and the Maid</a> <span class="comment">(Roud 116; Child 276)</span></li>
+<li><a href="thewifewraptinwethersskin.html">The Wife Wrapt in Wether’s Skin / The Wee Cooper o’ Fife / The Daughter of Peggy, O</a> <span class="comment">(Roud 117; Child 277; G/D 7:1282)</span></li>
+<li><a href="../../lloyd/songs/thefarmerscurstwife.html">The Farmer’s Curst Wife / The Devil and the Farmer’s Wife / The Devil and the Ploughman / Kellyburn Braes / Lily Bulero</a> <span class="comment">(Roud 160; Child 278; G/D 2:320)</span></li>
+<li><a href="../../ewan.maccoll/songs/thejollybeggar.html">The Jolly Beggar / The Beggar Man</a> <span class="comment">(Roud 118; Child 279; G/D 2:274)</span></li>
+<li><a href="../../watersons/songs/thegaberlunzieman.html">The Gaberlunzie Man / The Beggar Man / The Auld Beggarman</a> <span class="comment">(Roud 212; Child 279 Appendix; G/D 2:275; Henry H810)</span></li>
+<li><a href="thebeggarladdie.html">The Beggar Laddie / The Beggar’s Daughty</a> <span class="comment">(Roud 119; Child 280; G/D 2:277; Henry H810)</span></li>
+<li><a href="../../martin.carthy/songs/thekeachinthecreel.html">The Keach in the Creel / The Ride in the Creel / The Wee Toun Clerk</a> <span class="comment">(Roud 120; Child 281; G/D 2:317; Henry H201)</span></li>
+<li><a href="jocktheleg.html">Jock the Leg</a> <span class="comment">(Roud 3856; Child 282; G/D 2:263)</span></li>
+<li><a href="thecraftyfarmer.html">The Crafty Farmer</a> <span class="comment">(Roud 2640; Child 283; G/D 2:267)</span></li>
+<li><a href="../../lloyd/songs/thegoldenvanity.html">The Golden Vanity / The Sweet Kumadee / The Merry Willow Tree / The Old Virginia Lowlands</a> <span class="comment">(Roud 122; Child 286; G/D 1:37)</span></li>
+<li><a href="../../ewan.maccoll/songs/captainwardandtherainbow.html">Captain Ward and the Rainbow / Ward the Pirate</a> <span class="comment">(Roud 224; Child 287; G/D 1:39)</span></li>
+<li><a href="../../martin.carthy/songs/themermaid.html">The Mermaid / The Sailor’s Song / Our Gallant Ship</a> <span class="comment">(Roud 124; Child 289; G/D 1:27)</span></li>
+<li><a href="../../steeleye.span/songs/childowlet.html">Child Owlet</a> <span class="comment">(Roud 3883; Child 291)</span></li>
+<li><a href="../../steeleye.span/songs/johnofhazelgreen.html">John of Hazelgreen / Jock o’ Hazeldean</a> <span class="comment">(Roud 250; Child 293; G/D 5:1029)</span></li>
+<li><a href="../../frankie.armstrong/songs/thebrowngirl.html">The Brown Girl</a> <span class="comment">(Roud 180; Child 295)</span></li>
+<li><a href="youngpeggy.html">Young Peggy / Bonny Peggy</a> <span class="comment">(Roud 3875; Child 298)</span></li>
+<li><a href="../../watersons/songs/thetrooperandthemaid.html">The Trooper and the Maid / The Bold Dragoon / The Light Dragoon</a> <span class="comment">(Roud 162; Child 299; G/D 7:1470)</span></li>
+</ul>
+
+</article>
+</article> <!-- id="mainArticle" -->
+<!-- Google Chrome in version 77 needed this up in nav.shtml -->
+<nav id="mainNav">
+<div id="folk">
+ <p class="reference"><a href="/folk/">English Folk Music</a>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/records/search.php">
+     <a style="display: inline;" class="records" href="/folk/records/">Discography</a>&nbsp;
+     <input class="navartistinput" type="text" name="artist" size="10" title="Enter artist, album name, or part of those; wildcard * at the end is allowed">
+     </form></li>
+   <li><a class="newreleases" href="/folk/records/newreleases.html">New Releases</a></li>
+
+
+   <li><a class="favourites" href="/folk/favourites.html">Favourite Albums of 2025</a></li>
+<!--
+   <li><a class="missing" href="/folk/missing.html">Looking for albums &amp; books</a></li>
+-->
+  </ul>
+  <ul>
+   <li><a class="fellside" href="/folk/records/fellside.html">Fellside Discography</a></li>
+   <li><a class="fledgling" href="/folk/records/fledgling.html">Fledg'ling Discography</a></li>
+   <li><a class="foresttracks" href="/folk/records/foresttracks.html">Forest Tracks Discography</a></li>
+   <li><a class="freereed" href="/folk/records/freereed.html">Free Reed Discography</a></li>
+   <li><a class="greentrax" href="/folk/records/greentrax.html">Greentrax Discography</a></li>
+   <li><a class="greenwichvillage" href="/folk/records/greenwichvillage.html">Greenwich Village Discogr.</a></li>
+   <li><a class="hudson" href="/folk/records/hudson.html">Hudson Discography</a></li>
+   <li><a class="kyloe" href="/folk/records/kyloe.html">Kyloe Discography</a></li>
+   <li><a class="leadertrailer" href="/folk/records/leadertrailer.html">Leader/Trailer Discography</a></li>
+   <li><a class="musicaltraditions" href="/folk/records/musicaltraditions.html">Musical Traditions Discogr.</a></li>
+   <li><a class="nomasters" href="/folk/records/nomasters.html">No Masters Discography</a></li>
+   <li><a class="rootbeat" href="/folk/records/rootbeat.html">RootBeat Discography</a></li>
+   <li><a class="springthyme" href="/folk/records/springthyme.html">Springthyme Discography</a></li>
+   <li><a class="topic" href="/folk/records/topic.html">Topic Discography: Records</a></li>
+   <li><a class="topiccd" href="/folk/records/topiccd.html">Topic Discography: CDs</a></li>
+   <li><a class="traditionbearers" href="/folk/records/traditionbearers.html">Tradition Bearers Discogr.</a></li>
+   <li><a class="traditionalsound" href="/folk/records/traditionalsound.html">Traditional Sound Discogr.</a></li>
+   <li><a class="veteran" href="/folk/records/veteran.html">Veteran Discography</a></li>
+   <li><a class="wildgoose" href="/folk/records/wildgoose.html">WildGoose Discography</a></li>
+  </ul>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/songs/search.php">
+     <a style="display: inline;" class="songs" href="/folk/songs/">Song Index</a>&nbsp;
+     <input class="navsonginput" type="text" name="song" size="10" title="Enter song title or part of it (wildcard * at the end is allowed) or 'Roud nn' or 'Child nn'">
+     </form></li>
+   <li><a class="child" href="/folk/songs/childindex.html">Child Index</a></li>
+   <li><a class="laws" href="/folk/songs/lawsindex.html">Laws Index</a></li>
+   <li><a class="books" href="/folk/books/">Bibliography</a></li>
+  </ul>
+  <ul>
+   <li><a class="latestchanges" href="/folk/latestchanges.html">Latest Changes</a></li>
+  </ul>
+ </div>
+
+
+
+
+
+<div id="links">
+<p class="reference">Related Sites</p>
+  <p style="text-align: center;"><a href="https://mustrad.co.uk/"><img src="/images/mustrad.gif" width="100" height="100" alt="Musical Traditions" title="Musical Traditions"></a></p>
+
+<hr>
+  <p style="text-align: center;"><a href="https://folkinfo.mainlynorfolk.info/"><img src="/images/folkinfo.gif" width="162" height="113" alt="folkinfo.org" title="folkinfo.org"></a></p>
+</div> 
+</nav>
+
+
+<footer id="pageFooter">
+<span id="contact"><a href="/folk/about.html">About / Impressum</a></span>
+<span id="updated">
+<!-- Server: -->
+<!-- echo var="SERVER_ADDR" -->
+<!-- ; -->
+Last updated
+Sun Jul 12, 2026
+by
+<script>
+<!--
+document.write('<a href="mailto:'+'reinhard'+unescape('%2E')+'zierke'+unescape('%40')+'mailbox'+unescape('%2E')+'org">'+'Reinhard Zierke<\/a>');
+-->
+</script>
+<noscript>Reinhard Zierke</noscript>
+</span> <!-- id="updated" -->
+</footer>
+
+
+</body>
+</html>

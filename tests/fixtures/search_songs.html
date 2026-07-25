@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/folk.css" type="text/css" media="all">
+<link rel="stylesheet" href="local.css" type="text/css" media="all">
+
+<title>Index of Songs and Tunes</title>
+<style>
+input.navsonginput {display: none;}
+</style>
+</head>
+
+<body>
+<header id="pageHeader"><span id="head"></span>
+<a href="javascript:toggleNav();"><img id="togglenav" src="/images/menutoggle.png" alt="Hide navigation column" title="Hide navigation column"></a>
+<script>// <![CDATA[
+// check all or clear all checkboxes; argument is true|false
+// var showNav = window.innerWidth > 980;
+const mediaQuery = window.matchMedia('(min-width: 768px)');
+var showNav = mediaQuery.matches;
+function handleWindowChange(e) {
+   var button = document.getElementById("togglenav");
+   var mainnav = document.getElementById("mainNav");
+   if (! mainnav) {return;}
+   var body = document.getElementsByTagName("body")[0];
+   if (e.matches) {
+      button.style.display = "inline";
+      if (showNav) {
+         mainnav.style.display = "block";
+         body.style.gridTemplateColumns = "12rem 1fr";
+         button.title = button.alt = "Hide navigation column";
+      } else {
+         mainnav.style.display = "none";
+         body.style.gridTemplateColumns = "0 1fr";
+         button.title = button.alt = "Show navigation column";
+      }
+   } else {
+      mainnav.style.display = "block";
+      body.style.gridTemplateColumns = "1fr";
+      button.style.display = "none";
+   }
+}
+// Register event listener
+mediaQuery.addListener(handleWindowChange);
+// Initial check
+handleWindowChange(mediaQuery);
+// show or not show navigation
+function toggleNav() {
+   if (mediaQuery.matches) {
+      showNav = ! showNav;
+      handleWindowChange(mediaQuery);
+   }
+}
+// ]]></script>
+<a href="/peter.bellamy/records/mainlynorfolk.html#mainlynorfolk"><img src="/peter.bellamy/images/smallrec/mainlynorfolk_xtra1060.jpg" alt="Peter Bellamy: Mainly Norfolk" title="Peter Bellamy: Mainly Norfolk (Transatlantic XTRA 1060)"></a>
+<h1>Mainly Norfolk: English
+<!-- addtitle addition disabled as it's too wide for mobile devices -->
+
+Folk and Other Good Music</h1>
+
+
+
+
+</header>
+<!-- not include virtual="navigation.shtml" -->
+<article id="mainArticle">
+
+<article>
+<p class="reference">&gt;
+<a href="../index.html">Folk Music</a> &gt;
+<strong>Songs and Tunes</strong>
+</p>
+<h1>Index of Songs and Tunes</h1>
+
+<p>This (and the similar
+<a href="childindex.html">Index of Child Ballads</a>
+and
+<a href="lawsindex.html">Index of Laws Ballads</a>)
+is a quite crude song list that is automagically generated from the
+title lines in the song pages.  But at least you can search in it for
+whatever you need. Have fun!</p>
+
+<p>References numbers are given to:</p>
+
+<ul>
+ <li>Steve Roud,
+     <cite><a href="https://archives.vwml.org/search/roud">Folk Song Index</a></cite>
+     (London, Vaughan Williams Memorial Library),</li>
+ <li>Francis James Child,
+     <cite><a href="../books/theenglishandscottishpopularballads.html">The English &amp; Scottish Popular Ballads</a></cite>
+     (1882-98, reprinted New York, Dover, 1965),</li>
+ <li>G. Malcolm Laws jnr.,
+     <cite><a href="../books/#laws:americanballadryfrombritishbroadsides">American Balladry From British Broadsides</a></cite>
+     (Philadelphia, American Folklore Society, 1957),</li>
+ <li>Patrick Shuldham-Shaw, Emily B. Lyle (editors),
+     <cite><a href="../books/#greig:folksongcollection">The Greig-Duncan Folk Song Collection</a></cite>
+     Volumes 1-8
+     (Aberdeen University Press, Mercat Press, 1981-2002),</li>
+ <li>Gale Huntington (editor),
+     <cite><a href="../books/samhenryssongsofthepeople.html">Sam Henry’s Songs of the People</a></cite>
+     (Athens, GA: University of Georgia Press, 1990).</li>
+</ul>
+
+<p>I've added Steve Gardham's song &lsquo;master titles&rsquo; 
+as listed in his Excel sheet linked to in the Mudcat Café thread
+<a href="https://mudcat.org/thread.cfm?threadid=168592">Origins: Steve Gardham’s &lsquo;Earliest Versions&rsquo;</a>.
+(These are shown on the song pages, not here in the index.)</p>
+
+
+<form method="post" accept-charset="UTF-8" action="/folk/songs/search.php">
+<fieldset>
+<p class="center">
+<span style="display: inline-block;">
+Search for song: <input type="text" name="song" size="20" title="Enter song title or part of it; wildcard * at the end is allowed" value="reynardine">
+      <span class="error"> </span>
+</span> /
+<span style="display: inline-block;">
+author: <input type="text" name="author" size="15" title="Enter author name or part of it; wildcard * at the end is allowed" value="">
+      <span class="error"> </span>
+</span> /
+<span style="display: inline-block;">
+<select name="key">
+  <option value="roud">Roud</option>
+  <option value="child">Child</option>
+  <option value="laws">Laws</option>
+  <option value="gd">G/D</option>
+  <option value="henry">Henry</option>
+</select> 
+<input type="text" name="keyval" size="7" maxlength="7" value="">
+</span>
+      <span class="error"> </span>
+<input type="submit" value="Submit"></p>
+</fieldset>
+</form>
+</article>
+
+<article class="discography">
+<p class="reference">&gt;
+<a href="../index.html">Folk Music</a> &gt;
+<a href="index.html">Songs and Tunes</a> &gt;
+<strong>Search Results</strong></p>
+<!-- <p>Searching for song 'reynardine' and  ''</p> -->
+
+<ul class="plain">
+<li><a href="../../lloyd/songs/themountainshigh.html">The Mountains High / Upon the Mountains High / Reynardine / Bannero</a> <span class="comment">(Roud 397; Laws P15; G/D 2:333)</span></li></ul>
+</article>
+</article> <!-- id="mainArticle" -->
+<!-- Google Chrome in version 77 needed this up in nav.shtml -->
+<nav id="mainNav">
+<div id="folk">
+ <p class="reference"><a href="/folk/">English Folk Music</a>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/records/search.php">
+     <a style="display: inline;" class="records" href="/folk/records/">Discography</a>&nbsp;
+     <input class="navartistinput" type="text" name="artist" size="10" title="Enter artist, album name, or part of those; wildcard * at the end is allowed">
+     </form></li>
+   <li><a class="newreleases" href="/folk/records/newreleases.html">New Releases</a></li>
+
+
+   <li><a class="favourites" href="/folk/favourites.html">Favourite Albums of 2025</a></li>
+<!--
+   <li><a class="missing" href="/folk/missing.html">Looking for albums &amp; books</a></li>
+-->
+  </ul>
+  <ul>
+   <li><a class="fellside" href="/folk/records/fellside.html">Fellside Discography</a></li>
+   <li><a class="fledgling" href="/folk/records/fledgling.html">Fledg'ling Discography</a></li>
+   <li><a class="foresttracks" href="/folk/records/foresttracks.html">Forest Tracks Discography</a></li>
+   <li><a class="freereed" href="/folk/records/freereed.html">Free Reed Discography</a></li>
+   <li><a class="greentrax" href="/folk/records/greentrax.html">Greentrax Discography</a></li>
+   <li><a class="greenwichvillage" href="/folk/records/greenwichvillage.html">Greenwich Village Discogr.</a></li>
+   <li><a class="hudson" href="/folk/records/hudson.html">Hudson Discography</a></li>
+   <li><a class="kyloe" href="/folk/records/kyloe.html">Kyloe Discography</a></li>
+   <li><a class="leadertrailer" href="/folk/records/leadertrailer.html">Leader/Trailer Discography</a></li>
+   <li><a class="musicaltraditions" href="/folk/records/musicaltraditions.html">Musical Traditions Discogr.</a></li>
+   <li><a class="nomasters" href="/folk/records/nomasters.html">No Masters Discography</a></li>
+   <li><a class="rootbeat" href="/folk/records/rootbeat.html">RootBeat Discography</a></li>
+   <li><a class="springthyme" href="/folk/records/springthyme.html">Springthyme Discography</a></li>
+   <li><a class="topic" href="/folk/records/topic.html">Topic Discography: Records</a></li>
+   <li><a class="topiccd" href="/folk/records/topiccd.html">Topic Discography: CDs</a></li>
+   <li><a class="traditionbearers" href="/folk/records/traditionbearers.html">Tradition Bearers Discogr.</a></li>
+   <li><a class="traditionalsound" href="/folk/records/traditionalsound.html">Traditional Sound Discogr.</a></li>
+   <li><a class="veteran" href="/folk/records/veteran.html">Veteran Discography</a></li>
+   <li><a class="wildgoose" href="/folk/records/wildgoose.html">WildGoose Discography</a></li>
+  </ul>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/songs/search.php">
+     <a style="display: inline;" class="songs" href="/folk/songs/">Song Index</a>&nbsp;
+     <input class="navsonginput" type="text" name="song" size="10" title="Enter song title or part of it (wildcard * at the end is allowed) or 'Roud nn' or 'Child nn'">
+     </form></li>
+   <li><a class="child" href="/folk/songs/childindex.html">Child Index</a></li>
+   <li><a class="laws" href="/folk/songs/lawsindex.html">Laws Index</a></li>
+   <li><a class="books" href="/folk/books/">Bibliography</a></li>
+  </ul>
+  <ul>
+   <li><a class="latestchanges" href="/folk/latestchanges.html">Latest Changes</a></li>
+  </ul>
+ </div>
+
+
+
+
+
+<div id="links">
+<p class="reference">Related Sites</p>
+  <p style="text-align: center;"><a href="https://mustrad.co.uk/"><img src="/images/mustrad.gif" width="100" height="100" alt="Musical Traditions" title="Musical Traditions"></a></p>
+
+<hr>
+  <p style="text-align: center;"><a href="https://folkinfo.mainlynorfolk.info/"><img src="/images/folkinfo.gif" width="162" height="113" alt="folkinfo.org" title="folkinfo.org"></a></p>
+</div> 
+</nav>
+
+
+<footer id="pageFooter">
+<span id="contact"><a href="/folk/about.html">About / Impressum</a></span>
+<span id="updated">
+<!-- Server: -->
+<!-- echo var="SERVER_ADDR" -->
+<!-- ; -->
+Last updated
+Sun Apr 26, 2026
+by
+<script>
+<!--
+document.write('<a href="mailto:'+'reinhard'+unescape('%2E')+'zierke'+unescape('%40')+'mailbox'+unescape('%2E')+'org">'+'Reinhard Zierke<\/a>');
+-->
+</script>
+<noscript>Reinhard Zierke</noscript>
+</span> <!-- id="updated" -->
+</footer>
+
+
+</body>
+</html>'
+
+

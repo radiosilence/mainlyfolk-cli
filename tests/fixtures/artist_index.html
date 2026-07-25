@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/folk.css" type="text/css" media="all">
+<link rel="stylesheet" href="local.css" type="text/css" media="all">
+
+  <link rel="stylesheet" href="../css/artist.css" type="text/css" media="all">
+  <meta name="keywords" content="Martin Carthy">
+  <meta name="description" content="Complete discography, biography for Martin Carthy">
+<title>Martin Carthy</title>
+</head>
+
+<body>
+<header id="pageHeader"><span id="head"></span>
+<a href="javascript:toggleNav();"><img id="togglenav" src="/images/menutoggle.png" alt="Hide navigation column" title="Hide navigation column"></a>
+<script>// <![CDATA[
+// check all or clear all checkboxes; argument is true|false
+// var showNav = window.innerWidth > 980;
+const mediaQuery = window.matchMedia('(min-width: 768px)');
+var showNav = mediaQuery.matches;
+function handleWindowChange(e) {
+   var button = document.getElementById("togglenav");
+   var mainnav = document.getElementById("mainNav");
+   if (! mainnav) {return;}
+   var body = document.getElementsByTagName("body")[0];
+   if (e.matches) {
+      button.style.display = "inline";
+      if (showNav) {
+         mainnav.style.display = "block";
+         body.style.gridTemplateColumns = "12rem 1fr";
+         button.title = button.alt = "Hide navigation column";
+      } else {
+         mainnav.style.display = "none";
+         body.style.gridTemplateColumns = "0 1fr";
+         button.title = button.alt = "Show navigation column";
+      }
+   } else {
+      mainnav.style.display = "block";
+      body.style.gridTemplateColumns = "1fr";
+      button.style.display = "none";
+   }
+}
+// Register event listener
+mediaQuery.addListener(handleWindowChange);
+// Initial check
+handleWindowChange(mediaQuery);
+// show or not show navigation
+function toggleNav() {
+   if (mediaQuery.matches) {
+      showNav = ! showNav;
+      handleWindowChange(mediaQuery);
+   }
+}
+// ]]></script>
+<a href="/peter.bellamy/records/mainlynorfolk.html#mainlynorfolk"><img src="/peter.bellamy/images/smallrec/mainlynorfolk_xtra1060.jpg" alt="Peter Bellamy: Mainly Norfolk" title="Peter Bellamy: Mainly Norfolk (Transatlantic XTRA 1060)"></a>
+<h1>Mainly Norfolk: English
+<!-- addtitle addition disabled as it's too wide for mobile devices -->
+
+Folk and Other Good Music</h1>
+
+
+
+
+</header>
+<!-- not include virtual="navigation.shtml" -->
+<article id="mainArticle">
+
+<article>
+<p class="reference">&gt;
+<a href="../folk/index.html">English Folk Music</a> &gt;
+<strong>Martin Carthy</strong>
+</p>
+<h1>Martin Carthy</h1>
+
+<div id="artist">
+<div id="artistindex">
+ <h2><a href="biography.html">Biography</a></h2>
+ <h2><a href="records/index.html">Chronological Discography</a></h2>
+ <p><a href="records/solo.html">Solo recordings (and with Dave Swarbrick)</a><br>
+    <a href="records/group.html">Recordings in groups</a><br>
+    <a href="../watersons/records/cd.html">Waterson:Carthy</a></p>
+ <h2><a href="songs/index.html">Songs and Tunes</a></h2>
+ <p><a href="../watersons/child.html">F.J. Child</a></p>
+ <h2><a href="quiz.html">The Carthy Chronicles Quiz</a></h2>
+</div>
+<div id="artistimage">
+<figure><img src="images/mbe.jpg" width="170" height="241" title="Martin Carthy MBE, DMus" alt="Martin Carthy MBE, DMus">
+<figcaption>Martin Carthy MBE, DMus</figcaption>
+</figure>
+</div>
+</div>
+
+<h2>Links</h2>
+
+<ul class="plain">
+ <li>The official Waterson:Carthy website seems to have gone</li>
+ <li><a class="external" href="https://carthyonline.wordpress.com/">Come Sing It Plain</a>: Kevin Boyd’s Martin Carthy Fansite and Blog</li>
+ <li><a class="external" href="https://carthyarchive.wordpress.com/">The Martin Carthy Broadcast Achive</a> by Kevin Boyd</li>
+ <li><a class="external" href="https://fledglingrecords.co.uk/martin-carthy-a-complete-discography/">David Suff’s Martin Carthy discography</a></li>
+ <li><a class="external" href="http://www.slipcue.com/music/international/celtic/artists/carthy.html">Slipcue’s Martin Carthy discography</a></li>
+<!--
+ <li><a class="external" href="http://www.btinternet.com/~stephen.yarwood/carthy.htm">Stephen Yarwood’s Martin Carthy biography</a></li>
+ <li><a class="external" href="https://www.innerviews.org/inner/martin-carthy.html">Martin Carthy: Traditional Values</a>,
+interview by Anil Prasad (2004)</li>
+-->
+ <li><a class="external" href="https://tradfolk.co/music/music-interviews/martin-carthy/">Martin Carthy: the Mega Interview</a>
+by Jon Wilks (2018)</li>
+</ul>
+
+<h2>Acknowledgements</h2>
+
+<p>This Waterson / Carthy website was originally run by Garry Gillard.
+Thank you very much for your great work and for letting me take over!<br>
+Thanks to Dave Peabody and <a class="external" href="https://frootsmag.com/">fRoots</a>
+for the photograph of Martin Carthy from fRoots #186.</p>
+</article>
+
+</article> <!-- id="mainArticle" -->
+<!-- Google Chrome in version 77 needed this up in nav.shtml -->
+<nav id="mainNav">
+<div id="folk">
+ <p class="reference"><a href="/folk/">English Folk Music</a>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/records/search.php">
+     <a style="display: inline;" class="records" href="/folk/records/">Discography</a>&nbsp;
+     <input class="navartistinput" type="text" name="artist" size="10" title="Enter artist, album name, or part of those; wildcard * at the end is allowed">
+     </form></li>
+   <li><a class="newreleases" href="/folk/records/newreleases.html">New Releases</a></li>
+
+
+   <li><a class="favourites" href="/folk/favourites.html">Favourite Albums of 2025</a></li>
+<!--
+   <li><a class="missing" href="/folk/missing.html">Looking for albums &amp; books</a></li>
+-->
+  </ul>
+  <ul>
+   <li><a class="fellside" href="/folk/records/fellside.html">Fellside Discography</a></li>
+   <li><a class="fledgling" href="/folk/records/fledgling.html">Fledg'ling Discography</a></li>
+   <li><a class="foresttracks" href="/folk/records/foresttracks.html">Forest Tracks Discography</a></li>
+   <li><a class="freereed" href="/folk/records/freereed.html">Free Reed Discography</a></li>
+   <li><a class="greentrax" href="/folk/records/greentrax.html">Greentrax Discography</a></li>
+   <li><a class="greenwichvillage" href="/folk/records/greenwichvillage.html">Greenwich Village Discogr.</a></li>
+   <li><a class="hudson" href="/folk/records/hudson.html">Hudson Discography</a></li>
+   <li><a class="kyloe" href="/folk/records/kyloe.html">Kyloe Discography</a></li>
+   <li><a class="leadertrailer" href="/folk/records/leadertrailer.html">Leader/Trailer Discography</a></li>
+   <li><a class="musicaltraditions" href="/folk/records/musicaltraditions.html">Musical Traditions Discogr.</a></li>
+   <li><a class="nomasters" href="/folk/records/nomasters.html">No Masters Discography</a></li>
+   <li><a class="rootbeat" href="/folk/records/rootbeat.html">RootBeat Discography</a></li>
+   <li><a class="springthyme" href="/folk/records/springthyme.html">Springthyme Discography</a></li>
+   <li><a class="topic" href="/folk/records/topic.html">Topic Discography: Records</a></li>
+   <li><a class="topiccd" href="/folk/records/topiccd.html">Topic Discography: CDs</a></li>
+   <li><a class="traditionbearers" href="/folk/records/traditionbearers.html">Tradition Bearers Discogr.</a></li>
+   <li><a class="traditionalsound" href="/folk/records/traditionalsound.html">Traditional Sound Discogr.</a></li>
+   <li><a class="veteran" href="/folk/records/veteran.html">Veteran Discography</a></li>
+   <li><a class="wildgoose" href="/folk/records/wildgoose.html">WildGoose Discography</a></li>
+  </ul>
+  <ul>
+   <li><form method="post" accept-charset="UTF-8" action="/folk/songs/search.php">
+     <a style="display: inline;" class="songs" href="/folk/songs/">Song Index</a>&nbsp;
+     <input class="navsonginput" type="text" name="song" size="10" title="Enter song title or part of it (wildcard * at the end is allowed) or 'Roud nn' or 'Child nn'">
+     </form></li>
+   <li><a class="child" href="/folk/songs/childindex.html">Child Index</a></li>
+   <li><a class="laws" href="/folk/songs/lawsindex.html">Laws Index</a></li>
+   <li><a class="books" href="/folk/books/">Bibliography</a></li>
+  </ul>
+  <ul>
+   <li><a class="latestchanges" href="/folk/latestchanges.html">Latest Changes</a></li>
+  </ul>
+ </div>
+
+
+ <div id="martincarthy">
+  <p class="reference"><a href="/martin.carthy/">Martin Carthy</a></p>
+  <ul>
+   <li><a class="biography" href="/martin.carthy/biography.html">Biography</a></li>
+   <li><a class="records" href="/martin.carthy/records/">Discography</a></li>
+   <li><a class="records" href="/martin.carthy/records/solo.html">- Solo</a></li>
+   <li><a class="records" href="/martin.carthy/records/group.html">- Groups</a></li>
+   <li><a class="records" href="/watersons/records/cd.html">- Waterson:Carthy</a></li>
+   <li><a class="songs" href="/martin.carthy/songs/">Songs and Tunes</a></li>
+  </ul>
+ </div>
+
+
+
+
+<div id="links">
+<p class="reference">Related Sites</p>
+  <p style="text-align: center;"><a href="https://mustrad.co.uk/"><img src="/images/mustrad.gif" width="100" height="100" alt="Musical Traditions" title="Musical Traditions"></a></p>
+
+<hr>
+  <p style="text-align: center;"><a href="https://folkinfo.mainlynorfolk.info/"><img src="/images/folkinfo.gif" width="162" height="113" alt="folkinfo.org" title="folkinfo.org"></a></p>
+</div> 
+</nav>
+
+
+<footer id="pageFooter">
+<span id="contact"><a href="/folk/about.html">About / Impressum</a></span>
+<span id="updated">
+<!-- Server: -->
+<!-- echo var="SERVER_ADDR" -->
+<!-- ; -->
+Last updated
+Sun Apr 26, 2026
+by
+<script>
+<!--
+document.write('<a href="mailto:'+'reinhard'+unescape('%2E')+'zierke'+unescape('%40')+'mailbox'+unescape('%2E')+'org">'+'Reinhard Zierke<\/a>');
+-->
+</script>
+<noscript>Reinhard Zierke</noscript>
+</span> <!-- id="updated" -->
+</footer>
+
+
+</body>
+</html>
+
