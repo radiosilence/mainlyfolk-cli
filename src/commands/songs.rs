@@ -82,6 +82,13 @@ fn filter_index(
 ///   numeric part;
 /// - a bare number (`84`) — exact match against the numeric part, so it
 ///   doesn't also catch `840`;
+/// - a full reference code (`P15`, `84A`) — exact, case-insensitive match
+///   against the whole code. Digits alone are handled by the branch above;
+///   this is for a code that also carries letters, either a Laws-style
+///   letter prefix or a Child-style letter suffix. Tried before the prefix
+///   branch below and returning either way, so a code nothing carries stays
+///   an empty list rather than falling through into a free-text match that
+///   happens to hit something else;
 /// - a letter prefix (`P`, occasionally two letters like `dA`) — every code
 ///   starting with it, case-insensitive. Capped at two characters so a real
 ///   word (`"scarborough"` is all-alphabetic too) falls through to free text
@@ -100,6 +107,10 @@ fn matches_filter(codes: &[String], titles: &[String], filter: &str) -> bool {
         return codes.iter().any(|c| numeric_part(c) == Some(filter));
     }
 
+    if is_reference_code(filter) {
+        return codes.iter().any(|c| c.eq_ignore_ascii_case(filter));
+    }
+
     if (1..=2).contains(&filter.len()) && filter.chars().all(|c| c.is_ascii_alphabetic()) {
         let filter = filter.to_ascii_uppercase();
         return codes
@@ -111,6 +122,16 @@ fn matches_filter(codes: &[String], titles: &[String], filter: &str) -> bool {
     titles
         .iter()
         .any(|t| t.to_ascii_lowercase().contains(&needle))
+}
+
+/// A filter shaped like a reference code rather than a search word: letters
+/// and digits only, with at least one of each. Bare digits (`84`) and bare
+/// letters (`P`, free text) are handled elsewhere — this is for the mixed
+/// forms, `P15` (letter prefix, Laws) and `84A` (letter suffix, Child).
+fn is_reference_code(filter: &str) -> bool {
+    filter.chars().any(|c| c.is_ascii_digit())
+        && filter.chars().any(|c| c.is_ascii_alphabetic())
+        && filter.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
 fn parse_range(filter: &str) -> Option<(u32, u32)> {
@@ -197,6 +218,49 @@ mod tests {
         let q1 = summary(&["x"], &[], &["Q1"]);
         assert!(matches_filter(&p15.refs.laws, &p15.titles, "P"));
         assert!(!matches_filter(&q1.refs.laws, &q1.titles, "P"));
+    }
+
+    #[test]
+    fn a_full_laws_code_matches_the_exact_entry_not_the_whole_prefix_set() {
+        let p15 = summary(
+            &["The Mountains High / Upon the Mountains High / Reynardine"],
+            &[],
+            &["P15"],
+        );
+        let p16 = summary(&["Some Other Ballad"], &[], &["P16"]);
+        assert!(matches_filter(&p15.refs.laws, &p15.titles, "P15"));
+        assert!(!matches_filter(&p16.refs.laws, &p16.titles, "P15"));
+    }
+
+    #[test]
+    fn a_letter_prefix_still_returns_the_whole_set_not_just_one_code() {
+        let p15 = summary(&["x"], &[], &["P15"]);
+        let p16 = summary(&["y"], &[], &["P16"]);
+        assert!(matches_filter(&p15.refs.laws, &p15.titles, "P"));
+        assert!(matches_filter(&p16.refs.laws, &p16.titles, "P"));
+    }
+
+    #[test]
+    fn a_full_reference_code_matches_regardless_of_case() {
+        let p15 = summary(&["x"], &[], &["P15"]);
+        assert!(matches_filter(&p15.refs.laws, &p15.titles, "p15"));
+    }
+
+    #[test]
+    fn a_child_number_with_a_letter_suffix_matches_exactly() {
+        let s84a = summary(&["x"], &["84A"], &[]);
+        let s84b = summary(&["y"], &["84B"], &[]);
+        assert!(matches_filter(&s84a.refs.child, &s84a.titles, "84A"));
+        assert!(!matches_filter(&s84b.refs.child, &s84b.titles, "84A"));
+    }
+
+    #[test]
+    fn a_reference_code_matching_no_entry_stays_empty_rather_than_falling_back_to_text() {
+        // "P99" happens not to appear in either the codes or the title below —
+        // if the exact-code branch didn't return unconditionally, this would
+        // wrongly fall through to a free-text scan and could hit something.
+        let s = summary(&["Ballad P99 Blues"], &[], &["P15"]);
+        assert!(!matches_filter(&s.refs.laws, &s.titles, "P99"));
     }
 
     #[test]
