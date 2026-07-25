@@ -1,8 +1,8 @@
 use clap::{Args, CommandFactory, Parser, Subcommand};
 use clap_complete::{Shell, generate};
-use mainlyfolk_cli::archive::RefKey;
-use mainlyfolk_cli::models::Output;
-use mainlyfolk_cli::{commands, mcp};
+use mainlynorfolk_cli::archive::RefKey;
+use mainlynorfolk_cli::models::Output;
+use mainlynorfolk_cli::{commands, mcp};
 use std::io;
 use tracing_subscriber::EnvFilter;
 
@@ -261,7 +261,7 @@ async fn main() {
                 }
                 None => mcp::run_server().await,
             };
-            served.map_err(|e| mainlyfolk_cli::error::Error::Cache(e.to_string()))
+            served.map_err(|e| mainlynorfolk_cli::error::Error::Cache(e.to_string()))
         }
     };
 
