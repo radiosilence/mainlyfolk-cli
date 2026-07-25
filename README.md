@@ -40,6 +40,8 @@ folk records "carthy"                       # search releases by artist or album
 folk album /martin.carthy/records/carthy.html
 
 folk labels                                 # every label the archive has a discography for
+folk books                                  # the bibliography — books the archive's song pages cite
+folk books "Roud"                           # filter by section, author or title
 folk waterways "hard working boater"        # canal songs from waterwaysongs.info
 
 folk page /folk/latestchanges.html          # any archive page as plain text
@@ -94,22 +96,33 @@ claude mcp add --scope user folk -- folk mcp
 ## Caching and politeness
 
 mainlynorfolk.info is one person's decades-long labour, hand-maintained, with
-no API and no published rate limit — so restraint is this tool's job, not
-the archive's. Three things enforce it:
+no API and no published rate limit, and its content changes a few times a
+month — so nearly every read past the first should never leave the process.
+Four layers enforce that, cheapest first:
 
-- **A disk cache.** Every fetched page is written under the platform cache
-  directory (`~/.cache/mainlyfolk` on Linux, `~/Library/Caches/mainlyfolk` on
-  macOS), keyed by URL, and survives process exit — a session that looks at
-  the Child index ten times over a week fetches it once.
-- **24-hour freshness, then conditional revalidation.** Past that window a
-  request carries `If-None-Match`/`If-Modified-Since`; the archive answers
-  `304` with no body, the cheapest thing it can be asked to do.
-- **A concurrency cap of 4.** A single GraphQL query can fan out into dozens
-  of page loads (an artist's whole discography, a song's every recording);
-  this is what stops that from hitting a small static host all at once.
+- **An in-memory cache**, bounded at 512 pages. This is what makes a deep
+  GraphQL query that revisits the same hub pages — the Child index, an
+  artist's discography, the album every track on it points back to — free
+  after the first visit, rather than a disk read per field.
+- **A disk cache**, under the platform cache directory (`~/.cache/mainlyfolk`
+  on Linux, `~/Library/Caches/mainlyfolk` on macOS), keyed by URL and
+  surviving process exit — a session that looks at the Child index ten times
+  over a week fetches it once, and a long-running MCP server keeps that
+  benefit across restarts.
+- **Conditional revalidation**, once the disk entry passes 24 hours old: the
+  request carries `If-None-Match`/`If-Modified-Since`, and the archive answers
+  `304` with no body — the cheapest thing it can be asked to do.
+- **A real fetch**, capped at 4 concurrent requests across everything. A
+  single GraphQL query can fan out into dozens of page loads (an artist's
+  whole discography, a song's every recording); this is what stops that from
+  hitting a small static host all at once.
 
 Every request also carries a `User-Agent` naming the tool and this repo, so
 an archive maintainer who notices it in their logs can see what it is.
+
+`--no-cache` disables the disk cache only. The in-memory cache holds nothing
+across runs, so it has nothing stale to serve — there is no reason to disable
+it too.
 
 ## Credit
 
@@ -123,6 +136,17 @@ is the result. This tool is a reader over that work, nothing more.
 cargo test
 cargo clippy --all-targets -- -D warnings
 cargo fmt --all
+```
+
+`tests/live_archive.rs` checks the running assumptions against the real
+archives — that `search.php` still answers, that an entry-point page is still
+there. It's `#[ignore]`d and excluded from CI on purpose: these hit a
+volunteer-run site, and scheduled traffic against it would be the opposite of
+the politeness this tool otherwise goes out of its way for. Run it by hand
+when something looks wrong:
+
+```bash
+cargo test --test live_archive -- --ignored --test-threads=1
 ```
 
 ## License

@@ -18,14 +18,21 @@ version.
   [Waterways Songs](https://www.waterwaysongs.info) for canal and
   inland-waterways songs.
 - **Reads**: `search`, `song`, `child`, `laws`, `artist`, `records`, `album`,
-  `labels`, `waterways`, `page`, `latest`. Song and record search go through
-  the archive's own `search.php` endpoints rather than downloading and
-  filtering the full index client-side.
-- **A disk cache in front of every fetch.** Pages are keyed by URL under the
-  platform cache directory and survive process exit. Past a 24-hour freshness
+  `labels`, `books`, `waterways`, `page`, `latest`. Song and record search go
+  through the archive's own `search.php` endpoints rather than downloading and
+  filtering the full index client-side. `books` browses the bibliography — the
+  works the archive's song pages cite — filterable by section, author or
+  title.
+- **Two caches in front of every fetch, memory then disk.** A process-wide
+  in-memory cache, bounded at 512 pages, makes a deep GraphQL query that
+  revisits the same hub pages — the Child index, an artist's discography —
+  free after the first visit. Behind it, a disk cache keyed by URL under the
+  platform cache directory survives process exit. Past a 24-hour freshness
   window, requests revalidate conditionally (`If-None-Match`/
   `If-Modified-Since`) instead of refetching outright, and a stale copy is
   served rather than an error if the archive is briefly unreachable.
+  `--no-cache` disables the disk layer only; the in-memory cache holds nothing
+  across runs, so it has nothing stale to serve.
 - **A concurrency cap of 4** across every request, so a single GraphQL query
   fanning out into many page loads can't turn into a burst against a
   hand-maintained static site.
