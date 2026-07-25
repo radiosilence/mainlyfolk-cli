@@ -1,14 +1,14 @@
 //! Album page parser. Owned by the artist-parser work.
 //!
-//! The one fixture available (`album_martincarthy.html`) documents a single
-//! release inside an `<article id="..." data-performer="..." data-year="...">`
-//! wrapper with a table of catalogue lines per pressing — not the comma-tail
-//! `<p>` shape [`crate::parse::artist::discography`] parses. Both shapes are
-//! handled: the data attributes and table line for pages like the fixture, the
-//! `<cite>`-bearing `<p>` shape (reusing `artist`'s own helpers) for a
-//! multi-release page reached by `#fragment` into an `<h2 id="...">` section, in
-//! case one ever looks like a discography entry instead.
-use scraper::{ElementRef, Html, Selector};
+//! `album_martincarthy.html` documents its release as a self-contained
+//! `<article id="..." data-title="..." data-performer="..." data-year="...">`:
+//! structured data for title/artist/year, a `table.album` of per-pressing
+//! catalogue lines, and a `<h2>Tracks</h2>` section split across one `<ol>` per
+//! LP side. The data attributes are authoritative and preferred over anything
+//! scraped from text; a `<cite>`-bearing `<p>` (the shape
+//! [`crate::parse::artist::discography`] parses) is tried only as a fallback,
+//! for a hypothetical page shaped like a discography entry instead.
+use scraper::{CaseSensitivity, ElementRef, Html, Node, Selector};
 
 use crate::error::{Error, Result};
 use crate::models::{Album, Source, Track};
@@ -35,16 +35,29 @@ pub fn parse(html: &str, path: &str) -> Result<(Album, Vec<Track>)> {
     let main = doc.select(&main_sel).next();
 
     let mut marker_heading: Option<String> = None;
-    let scope: Vec<ElementRef> = match fragment.and_then(|f| find_by_id(&doc, f)) {
-        Some(marker) if is_heading(marker) => {
-            marker_heading = Some(squash(&marker.text().collect::<String>()));
-            heading_section(marker)
+    let scope: Vec<ElementRef> = match fragment {
+        // `#fragment` always names one of the page's own release articles.
+        Some(frag) => match find_release_article(&doc, frag).or_else(|| find_by_id(&doc, frag)) {
+            Some(marker) if is_heading(marker) => {
+                marker_heading = Some(squash(&marker.text().collect::<String>()));
+                heading_section(marker)
+            }
+            Some(marker) => vec![marker],
+            None => main.into_iter().collect(),
+        },
+        // No fragment: the page's first release article, or the whole thing if
+        // it isn't structured that way.
+        None => {
+            let release_sel = Selector::parse("article[data-title]").unwrap();
+            main.and_then(|m| m.select(&release_sel).next())
+                .or(main)
+                .into_iter()
+                .collect()
         }
-        Some(marker) => vec![marker],
-        None => main.into_iter().collect(),
     };
 
     let title = marker_heading
+        .or_else(|| first_attr(&scope, "data-title"))
         .or_else(|| first_text_in(&scope, "h1"))
         .or_else(|| first_text_in(&scope, "h2"))
         .or_else(|| {
@@ -58,16 +71,21 @@ pub fn parse(html: &str, path: &str) -> Result<(Album, Vec<Track>)> {
     let data_year = first_attr(&scope, "data-year");
 
     let (table_label, table_catalogue, table_format) = catalogue_from_table(&scope);
-    let (cite_artist, cite_meta) = catalogue_from_cite_paragraph(&scope);
+    // Only worth trying when the structured data didn't already answer it.
+    let (cite_artist, cite_meta) = if performer.is_none() || data_year.is_none() {
+        catalogue_from_cite_paragraph(&scope)
+    } else {
+        (None, None)
+    };
 
     let artist = performer.or(cite_artist);
-    let year = data_year.or(cite_meta.as_ref().and_then(|m| m.year.clone()));
+    let year = data_year.or_else(|| cite_meta.as_ref().and_then(|m| m.year.clone()));
     let label = table_label.or_else(|| cite_meta.as_ref().and_then(|m| m.label.clone()));
     let catalogue_number =
         table_catalogue.or_else(|| cite_meta.as_ref().and_then(|m| m.catalogue_number.clone()));
     let format = table_format.or_else(|| cite_meta.as_ref().and_then(|m| m.format.clone()));
 
-    let cover_url = first_img_src(&scope, path);
+    let cover_url = first_table_img_src(&scope, path);
     let tracks = parse_tracks(&scope, path);
 
     Ok((
@@ -91,13 +109,18 @@ fn find_by_id<'a>(doc: &'a Html, id: &str) -> Option<ElementRef<'a>> {
     doc.select(&selector).next()
 }
 
+fn find_release_article<'a>(doc: &'a Html, id: &str) -> Option<ElementRef<'a>> {
+    let selector = Selector::parse(&format!("article[id=\"{id}\"]")).ok()?;
+    doc.select(&selector).next()
+}
+
 fn is_heading(el: ElementRef) -> bool {
     matches!(el.value().name(), "h1" | "h2" | "h3" | "h4" | "h5" | "h6")
 }
 
 /// `marker` plus its following siblings, stopping before the next sibling that
-/// shares its tag name — the section a `#fragment` into an `<h2 id="...">`
-/// introduces.
+/// shares its tag name. Kept as a fallback for a `#fragment` landing on a
+/// heading rather than a release `<article>`.
 fn heading_section(marker: ElementRef) -> Vec<ElementRef> {
     let tag = marker.value().name().to_string();
     let mut section = vec![marker];
@@ -121,9 +144,9 @@ fn first_text_in(scope: &[ElementRef], tag: &str) -> Option<String> {
         .map(|el| squash(&el.text().collect::<String>()))
 }
 
-/// Checks each scope element's own attribute before its descendants': a
-/// `#fragment` landing on a container like `<article data-performer="...">`
-/// carries the attribute itself, not on a child.
+/// Checks each scope element's own attribute before its descendants': the
+/// release `<article data-performer="...">` carries the attribute itself, not
+/// on a child.
 fn first_attr(scope: &[ElementRef], attr: &str) -> Option<String> {
     for el in scope {
         if let Some(v) = el.value().attr(attr) {
@@ -138,19 +161,22 @@ fn first_attr(scope: &[ElementRef], attr: &str) -> Option<String> {
         .map(String::from)
 }
 
-fn first_img_src(scope: &[ElementRef], base: &str) -> Option<String> {
-    let selector = Selector::parse("img").unwrap();
+fn first_table_img_src(scope: &[ElementRef], base: &str) -> Option<String> {
+    let table_sel = Selector::parse("table.album img").unwrap();
+    let any_sel = Selector::parse("img").unwrap();
     scope
         .iter()
-        .find_map(|el| el.select(&selector).next())
+        .find_map(|el| el.select(&table_sel).next())
+        .or_else(|| scope.iter().find_map(|el| el.select(&any_sel).next()))
         .and_then(|img| img.value().attr("src"))
         .map(|src| crate::client::resolve_path(src, base))
 }
 
 /// The first catalogue line inside a `table.album` cell, e.g.
-/// `"Fontana TL 5269 (mono LP, UK, 1965)"` — one line per pressing, so only the
-/// first (the release's primary pressing) is used. Distinguished from the
-/// title/performer `<p>` that precedes it in the same cell by having a `(`.
+/// `"Fontana TL 5269 (mono LP, UK, 1965)"` — one line per pressing (`<br>`
+/// separated, sometimes with the label as a link), so only the first (the
+/// release's primary pressing) is used. Distinguished from the title/performer
+/// `<p>` that precedes it in the same cell by having a `(`.
 fn catalogue_from_table(scope: &[ElementRef]) -> (Option<String>, Option<String>, Option<String>) {
     let table_p_sel = Selector::parse("table.album p").unwrap();
     let Some(p) = scope.iter().find_map(|el| {
@@ -160,13 +186,7 @@ fn catalogue_from_table(scope: &[ElementRef]) -> (Option<String>, Option<String>
         return (None, None, None);
     };
 
-    let first_line = p
-        .children()
-        .find_map(|n| n.value().as_text().map(|t| t.text.trim().to_string()))
-        .filter(|t| !t.is_empty())
-        .unwrap_or_else(|| p.text().collect::<String>());
-    let line = squash(&first_line);
-
+    let line = squash(&text_before_first_br(p));
     let (head, paren) = match line.split_once('(') {
         Some((h, rest)) => (h.trim(), rest.trim_end_matches(')').trim()),
         None => (line.as_str(), ""),
@@ -179,10 +199,31 @@ fn catalogue_from_table(scope: &[ElementRef]) -> (Option<String>, Option<String>
     (label, catalogue_number, format)
 }
 
+/// Text of `el`'s children up to (excluding) its first `<br>`, with inline
+/// elements like an `<a class="external">` label link flattened to their text.
+fn text_before_first_br(el: ElementRef) -> String {
+    let mut out = String::new();
+    for node in el.children() {
+        if node.value().as_element().is_some_and(|e| e.name() == "br") {
+            break;
+        }
+        match node.value() {
+            Node::Text(t) => out.push_str(&t.text),
+            Node::Element(_) => {
+                if let Some(child) = ElementRef::wrap(node) {
+                    out.push_str(&child.text().collect::<String>());
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 /// The artist and tail metadata from the first `<cite>`-bearing `<p>` in scope,
-/// reusing exactly the shape `artist::discography` parses — for a multi-release
-/// album page whose `#fragment` section is written the same way as a
-/// discography entry rather than as this fixture's table.
+/// reusing exactly the shape `artist::discography` parses — for a release page
+/// with no `data-performer`/`data-year` of its own, in case one is ever shaped
+/// like a discography entry rather than this fixture's table.
 fn catalogue_from_cite_paragraph(
     scope: &[ElementRef],
 ) -> (Option<String>, Option<crate::parse::artist::ReleaseMeta>) {
@@ -202,14 +243,15 @@ fn catalogue_from_cite_paragraph(
     (artist, Some(parse_release_tail(&tail, None)))
 }
 
-/// Every `<ol>`/`<ul>` in scope, in document order — the fixture splits a
-/// tracklist across several `<ol start="N">` (one per LP side), so all of them
-/// are collected rather than just the first; positions honour each list's own
-/// `start` so side two continues the numbering rather than restarting at 1.
+/// Every `<ol>`/`<ul>` in scope, in document order — an album is split across
+/// sides and each side is its own `<ol>`, so all of them are collected rather
+/// than just the first. Position honours each list's own `start` attribute
+/// (default 1) so a later side continues the numbering instead of restarting.
 fn parse_tracks(scope: &[ElementRef], base: &str) -> Vec<Track> {
     let list_sel = Selector::parse("ol, ul").unwrap();
     let li_sel = Selector::parse("li").unwrap();
-    let song_link_sel = Selector::parse("a[href]").unwrap();
+    let link_sel = Selector::parse("a[href]").unwrap();
+    let time_sel = Selector::parse("span.time").unwrap();
 
     let mut tracks = Vec::new();
     for el in scope {
@@ -223,19 +265,20 @@ fn parse_tracks(scope: &[ElementRef], base: &str) -> Vec<Track> {
 
             for (i, li) in list.select(&li_sel).enumerate() {
                 let position = ordered.then(|| start + i as u32);
-                let raw = squash(&li.text().collect::<String>());
-                let (title, duration) = split_trailing_duration(&raw);
 
-                let song_path = li
-                    .select(&song_link_sel)
-                    .find(|a| {
-                        a.value()
-                            .attr("href")
-                            .is_some_and(|h| h.contains("/songs/"))
-                    })
-                    .or_else(|| li.select(&song_link_sel).next())
+                let first_link = li.select(&link_sel).next();
+                let title = match first_link {
+                    Some(a) => squash(&a.text().collect::<String>()),
+                    None => squash(&track_text_excluding_annotations(li)),
+                };
+                let song_path = first_link
                     .and_then(|a| a.value().attr("href"))
                     .map(|href| crate::client::resolve_path(href, base));
+                let duration = li
+                    .select(&time_sel)
+                    .next()
+                    .map(|s| squash(&s.text().collect::<String>()))
+                    .map(|s| s.trim_matches(|c| c == '(' || c == ')').to_string());
 
                 tracks.push(Track {
                     position,
@@ -249,32 +292,30 @@ fn parse_tracks(scope: &[ElementRef], base: &str) -> Vec<Track> {
     tracks
 }
 
-/// Splits a trailing `"(m:ss)"` or `"(m.ss)"` off squashed `<li>` text — the
-/// fixture writes track times as `"(2.31)"`, a decimal point rather than the
-/// colon [`Track::duration`]'s own doc comment shows, so both are accepted and
-/// kept exactly as printed.
-fn split_trailing_duration(text: &str) -> (String, Option<String>) {
-    let Some(rest) = text.strip_suffix(')') else {
-        return (text.to_string(), None);
-    };
-    let Some(open) = rest.rfind('(') else {
-        return (text.to_string(), None);
-    };
-    let inner = &rest[open + 1..];
-    let Some((mins, secs)) = inner.split_once(['.', ':']) else {
-        return (text.to_string(), None);
-    };
-    if !mins.is_empty()
-        && mins.len() <= 3
-        && secs.len() == 2
-        && mins.bytes().all(|b| b.is_ascii_digit())
-        && secs.bytes().all(|b| b.is_ascii_digit())
-    {
-        let title = text[..open].trim_end().to_string();
-        (title, Some(inner.to_string()))
-    } else {
-        (text.to_string(), None)
+/// A track `<li>`'s text with its `span.comment` (Roud/Child refs) and
+/// `span.time` (duration) subtrees removed — the fallback when a track has no
+/// `<a>` to take the title from directly.
+fn track_text_excluding_annotations(li: ElementRef) -> String {
+    let mut out = String::new();
+    for node in li.children() {
+        if let Some(el) = node.value().as_element()
+            && el.name() == "span"
+            && (el.has_class("comment", CaseSensitivity::CaseSensitive)
+                || el.has_class("time", CaseSensitivity::CaseSensitive))
+        {
+            continue;
+        }
+        match node.value() {
+            Node::Text(t) => out.push_str(&t.text),
+            Node::Element(_) => {
+                if let Some(child) = ElementRef::wrap(node) {
+                    out.push_str(&child.text().collect::<String>());
+                }
+            }
+            _ => {}
+        }
     }
+    out
 }
 
 #[cfg(test)]
@@ -284,20 +325,43 @@ mod tests {
     const ALBUM_MARTINCARTHY: &str = include_str!("../../tests/fixtures/album_martincarthy.html");
 
     #[test]
-    fn album_page_gives_title_and_tracks() {
+    fn album_page_gives_title_artist_year_and_label_from_structured_data() {
         let (album, tracks) = parse(
             ALBUM_MARTINCARTHY,
             "/martin.carthy/records/martincarthy.html",
         )
         .unwrap();
-        assert!(!album.title.is_empty());
         assert_eq!(album.title, "Martin Carthy");
         assert_eq!(album.artist.as_deref(), Some("Martin Carthy"));
         assert_eq!(album.year.as_deref(), Some("1965"));
-        // Reported in the PR: how many tracks this fixture's two `<ol>` sides give.
+        assert!(album.label.as_deref().unwrap().contains("Fontana"));
         assert_eq!(tracks.len(), 14);
-        assert!(tracks.iter().any(|t| t.song_path.is_some()));
-        assert!(tracks.iter().any(|t| t.duration.is_some()));
+    }
+
+    #[test]
+    fn tracks_carry_titles_durations_and_song_paths_across_both_sides() {
+        let (_, tracks) = parse(
+            ALBUM_MARTINCARTHY,
+            "/martin.carthy/records/martincarthy.html",
+        )
+        .unwrap();
+
+        let first = &tracks[0];
+        assert_eq!(first.position, Some(1));
+        assert_eq!(first.title, "High Germany");
+        assert_eq!(first.duration.as_deref(), Some("2.31"));
+        assert!(
+            first
+                .song_path
+                .as_deref()
+                .unwrap()
+                .ends_with("highgermany.html")
+        );
+
+        // Side 2's `<ol start="8">` continues the numbering rather than
+        // restarting — position 8 is track index 7, not a second track 1.
+        let eighth = tracks.iter().find(|t| t.position == Some(8)).unwrap();
+        assert_eq!(eighth.title, "Scarborough Fair");
     }
 
     #[test]
