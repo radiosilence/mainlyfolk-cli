@@ -31,9 +31,9 @@ folk search --scheme roud --number 12       # Roud 12 — The Elfin Knight / Sca
 folk song /martin.carthy/songs/reynardine.html
 folk song /martin.carthy/songs/reynardine.html --lyrics
 
-folk child 84                               # Child 84 — Barbara Allen
+folk child 84                               # Child #84 — Bonny Barbara Allan
 folk child 1-50                             # a range
-folk laws P15                               # Laws P15 — Reynardine / The Mountains High
+folk laws P15
 
 folk artist "Martin Carthy"                 # index page + chronological discography
 folk records "carthy"                       # search releases by artist or album
