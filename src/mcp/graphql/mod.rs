@@ -25,11 +25,16 @@ pub type FolkSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
 /// loader holds one; its own methods take `&self`, so no lock is needed.
 pub type SharedArchive = std::sync::Arc<crate::archive::Archive>;
 
-/// Maximum selection-set nesting. The graph cycles by design — a song's
-/// recordings resolve albums whose tracks resolve songs — so unbounded depth
-/// would let one query walk the archive forever, a page fetch at a time. 15 is
-/// far past anything useful: `song → recordings → album → tracks → song` is 5.
-const MAX_DEPTH: usize = 15;
+/// Maximum selection-set nesting.
+///
+/// A stop, not a discouragement. Depth is the point of this schema: the archive
+/// is a web of cross-references and following them is what it is for. `artist →
+/// discography → album → tracks → song → recordings → album → tracks → song` is
+/// a reasonable question, and it is nine levels before it even begins to repeat;
+/// `song → sameRoud → song → sameRoud` recurses from there for as long as it is
+/// useful. The cap exists only because the cycles have no natural end, and an
+/// unbounded query would walk the archive forever a page at a time.
+const MAX_DEPTH: usize = 30;
 
 /// Build the GraphQL schema. It holds nothing per-caller — the archive and the
 /// loaders are supplied per request by [`request`].
@@ -42,7 +47,7 @@ pub fn build_schema() -> FolkSchema {
     // The politeness budget lives where it can actually be enforced: the
     // client's concurrency cap.
     //
-    // Depth stays capped: the graph has cycles, and nothing else bounds them.
+    // Depth is capped generously rather than tightly — see [`MAX_DEPTH`].
     Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
         .limit_depth(MAX_DEPTH)
         .finish()

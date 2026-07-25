@@ -257,6 +257,54 @@ impl QueryRoot {
         )
     }
 
+    /// The archive's bibliography — the books its song pages cite, with
+    /// publishers, years, and links to full texts online where they exist. One
+    /// request; `totalCount` is then free.
+    ///
+    /// The same list `BookRef.book` resolves against, so asking here and
+    /// following citations there costs one page between them.
+    #[graphql(complexity = "page_complexity(first, last, child_complexity)")]
+    async fn books(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(
+            desc = "Keep only books in this section, matched case-insensitively — \
+                    \"Ballads and Songs\", \"Folk Song and Music\", \"Biographies\", \
+                    \"Other Books\". Omit for the whole bibliography."
+        )]
+        section: Option<String>,
+        after: Option<String>,
+        before: Option<String>,
+        first: Option<i32>,
+        last: Option<i32>,
+    ) -> Result<ListConnection<GqlBook>> {
+        let section = non_empty(section).map(|s| s.to_lowercase());
+        let books: Vec<GqlBook> = load_books(ctx)
+            .await?
+            .iter()
+            .filter(|book| match &section {
+                Some(wanted) => book
+                    .section
+                    .as_deref()
+                    .is_some_and(|s| s.to_lowercase().contains(wanted)),
+                None => true,
+            })
+            .cloned()
+            .map(GqlBook::from)
+            .collect();
+
+        paginate(
+            books,
+            PageArgs {
+                after,
+                before,
+                first,
+                last,
+            },
+            |b| b.0.id.clone(),
+        )
+    }
+
     /// Canal and inland-waterways songs from waterwaysongs.info. One request for
     /// the site's menu, then filtered here.
     ///

@@ -17,13 +17,13 @@ use async_graphql::{Context, Enum, Object, Result, SimpleObject};
 
 use super::connection::{ListConnection, PageArgs, page_complexity, paginate};
 use super::loaders::{
-    Albums, Artists, Discographies, Index, IndexKind, Indexes, PageKey, Pages, Songs,
-    WaterwaysSongs, to_gql_error,
+    Albums, Artists, Discographies, Index, IndexKind, Indexes, PageKey, Pages, SongSearch,
+    SongSearches, Songs, WaterwaysSongs, to_gql_error,
 };
 use crate::archive::{RefKey, paths};
 use crate::models::{
-    Album, Artist, Attribution, BookRef, Label, Link, LyricVersion, Note, Page, Recording, Song,
-    SongRefs, SongSummary, Source, Track, WaterwaysSong,
+    Album, Artist, Attribution, Book, BookRef, Label, Link, LyricVersion, Note, Page, Recording,
+    Song, SongRefs, SongSummary, Source, Track, WaterwaysSong,
 };
 use crate::parse;
 
@@ -130,6 +130,14 @@ pub(crate) async fn load_song_index(
         .unwrap_or_default())
 }
 
+/// The archive's bibliography.
+pub(crate) async fn load_books(ctx: &Context<'_>) -> Result<Arc<Vec<Book>>> {
+    Ok(load_index(ctx, IndexKind::Books)
+        .await?
+        .and_then(|i| i.books())
+        .unwrap_or_default())
+}
+
 /// The record labels with a discography on the archive.
 pub(crate) async fn load_labels(ctx: &Context<'_>) -> Result<Arc<Vec<Label>>> {
     Ok(load_index(ctx, IndexKind::Labels)
@@ -194,6 +202,77 @@ pub(crate) async fn load_waterways_song(
         .await
         .map_err(to_gql_error)?
         .map(GqlWaterwaysSong::from))
+}
+
+/// Every other song page carrying one of `codes` under `scheme`, found through
+/// the archive's own reference search.
+///
+/// `exclude` drops the song that asked, which is always among the results and
+/// would otherwise make the edge a self-loop rather than a way to travel.
+/// Results are deduplicated by path and kept in the order the codes were given,
+/// so repeating the query gives the same page.
+pub(crate) async fn load_siblings(
+    ctx: &Context<'_>,
+    scheme: RefScheme,
+    codes: &[String],
+    exclude: &str,
+) -> Result<Vec<GqlSongSummary>> {
+    if codes.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let searches: Vec<SongSearch> = codes
+        .iter()
+        .map(|number| SongSearch {
+            number: Some(number.clone()),
+            scheme: Some(scheme),
+            ..Default::default()
+        })
+        .collect();
+    let found = ctx
+        .data::<SongSearches>()?
+        .load_many(searches.clone())
+        .await
+        .map_err(to_gql_error)?;
+
+    let mut seen = std::collections::HashSet::new();
+    let mut siblings = Vec::new();
+    for search in &searches {
+        let Some(results) = found.get(search) else {
+            continue;
+        };
+        for summary in results.iter() {
+            if summary.path != exclude && seen.insert(summary.path.clone()) {
+                siblings.push(GqlSongSummary::from(summary.clone()));
+            }
+        }
+    }
+    Ok(siblings)
+}
+
+/// The artist directory a set of song results agree on.
+///
+/// Song paths are `/<artist>/songs/<song>.html`, so the first segment is the
+/// artist's own index — the one thing a printed credit never gives you. A search
+/// can return songs filed under several artists, so the most frequent wins and
+/// ties go to whichever the archive listed first, which keeps the answer stable
+/// across runs.
+fn artist_path_of(summaries: &[SongSummary]) -> Option<String> {
+    let mut counts: Vec<(String, usize)> = Vec::new();
+    for summary in summaries {
+        let Some(segment) = summary.path.split('/').nth(1).filter(|s| !s.is_empty()) else {
+            continue;
+        };
+        let directory = format!("/{segment}/");
+        match counts.iter_mut().find(|(path, _)| *path == directory) {
+            Some((_, seen)) => *seen += 1,
+            None => counts.push((directory, 1)),
+        }
+    }
+    counts
+        .into_iter()
+        .reduce(|best, next| if next.1 > best.1 { next } else { best })
+        .map(|(path, _)| path)
 }
 
 /// The waterwaysongs.info song menu. Titles and paths only — the menu carries
@@ -315,24 +394,107 @@ impl From<Note> for GqlNote {
     }
 }
 
-/// A book cited in a song page's bibliography.
-#[derive(SimpleObject)]
-#[graphql(name = "BookRef")]
-pub struct GqlBookRef {
-    pub author: Option<String>,
-    pub title: String,
-    /// Path to the archive's own page for the book, when it has one. Read it
-    /// with `page(path:)`.
-    pub path: Option<String>,
+/// A book as the archive's bibliography lists it.
+pub struct GqlBook(pub Book);
+
+impl From<Book> for GqlBook {
+    fn from(b: Book) -> Self {
+        Self(b)
+    }
 }
+
+#[Object(name = "Book")]
+impl GqlBook {
+    /// The entry's anchor id, e.g. `"baringgould:songsofthewest"`. The id, and
+    /// what a song page's citation links to as `/folk/books/#<id>`.
+    async fn id(&self) -> &str {
+        &self.0.id
+    }
+    /// Path to the book's own page, or to its anchor in the bibliography.
+    async fn path(&self) -> &str {
+        &self.0.path
+    }
+    async fn title(&self) -> &str {
+        &self.0.title
+    }
+    /// Authors and editors, as the entry credits them.
+    async fn authors(&self) -> &[String] {
+        &self.0.authors
+    }
+    /// Publisher and place, e.g. `"London: Chatto & Windus Piccadilly"`.
+    async fn publisher(&self) -> Option<&str> {
+        self.0.publisher.as_deref()
+    }
+    async fn year(&self) -> Option<&str> {
+        self.0.year.as_deref()
+    }
+    /// Which section of the bibliography this sits under — "Ballads and Songs",
+    /// "Folk Song and Music", "Biographies", "Other Books".
+    async fn section(&self) -> Option<&str> {
+        self.0.section.as_deref()
+    }
+    /// A full text online, where the archive links one — Gutenberg, archive.org.
+    /// Off-archive, so this is a URL rather than a path.
+    async fn online_url(&self) -> Option<&str> {
+        self.0.online_url.as_deref()
+    }
+    async fn cover_url(&self) -> Option<&str> {
+        self.0.cover_url.as_deref()
+    }
+}
+
+/// A book as one song page cites it — a title, sometimes an author, sometimes a
+/// link into the bibliography. Follow `book` for the record behind the citation.
+pub struct GqlBookRef(pub BookRef);
 
 impl From<BookRef> for GqlBookRef {
     fn from(b: BookRef) -> Self {
-        Self {
-            author: b.author,
-            title: b.title,
-            path: b.path,
-        }
+        Self(b)
+    }
+}
+
+#[Object(name = "BookRef")]
+impl GqlBookRef {
+    /// Author as the citation gives them, which is often a surname alone.
+    async fn author(&self) -> Option<&str> {
+        self.0.author.as_deref()
+    }
+    /// Title as the citation gives it.
+    async fn title(&self) -> &str {
+        &self.0.title
+    }
+    /// Path to the archive's entry for the book, usually `/folk/books/#<id>`.
+    async fn path(&self) -> Option<&str> {
+        self.0.path.as_deref()
+    }
+
+    /// The book itself — publisher, year, and sometimes a link to a full text
+    /// online.
+    ///
+    /// **Fetches the archive's bibliography**, but only once: every citation on
+    /// every song in the query resolves against that one parsed list, so this is
+    /// one page whether one book asks or a hundred do. Matched on the citation's
+    /// `#anchor`, falling back to the title. Null when the bibliography has no
+    /// entry for it.
+    #[graphql(complexity = "5 + child_complexity")]
+    async fn book(&self, ctx: &Context<'_>) -> Result<Option<GqlBook>> {
+        let books = load_books(ctx).await?;
+        let anchor = self
+            .0
+            .path
+            .as_deref()
+            .and_then(|path| path.split_once('#'))
+            .map(|(_, anchor)| anchor);
+
+        let found = anchor
+            .and_then(|id| books.iter().find(|b| b.id == id))
+            .or_else(|| {
+                books
+                    .iter()
+                    .find(|b| b.title.eq_ignore_ascii_case(&self.0.title))
+            });
+
+        Ok(found.cloned().map(GqlBook::from))
     }
 }
 
@@ -515,6 +677,65 @@ impl GqlSong {
                 last,
             },
             |r| r.cursor.clone(),
+        )
+    }
+
+    /// Every other page on the archive for the same song, by Roud number.
+    ///
+    /// The archive files one song under each artist who recorded it, so "The
+    /// Elfin Knight" exists a dozen times over under a dozen different titles.
+    /// The Roud number is the archive's own key for "these are the same song",
+    /// which makes this the honest way across — and it costs **one reference
+    /// search**, not a crawl.
+    ///
+    /// This song is excluded from its own results. Pair it with `song { ... }`
+    /// on the results to walk sideways and keep going. Empty for a song with no
+    /// Roud number, which usually means a modern composition.
+    #[graphql(complexity = "page_complexity(first, last, child_complexity)")]
+    async fn same_roud(
+        &self,
+        ctx: &Context<'_>,
+        after: Option<String>,
+        before: Option<String>,
+        first: Option<i32>,
+        last: Option<i32>,
+    ) -> Result<ListConnection<GqlSongSummary>> {
+        let siblings = load_siblings(ctx, RefScheme::Roud, &self.0.refs.roud, &self.0.path).await?;
+        paginate(
+            siblings,
+            PageArgs {
+                after,
+                before,
+                first,
+                last,
+            },
+            |s| s.0.path.clone(),
+        )
+    }
+
+    /// The same, by Child number — narrower than `sameRoud` and only ever
+    /// populated for the 305 canonical ballads. One reference search; this song
+    /// is excluded from its own results.
+    #[graphql(complexity = "page_complexity(first, last, child_complexity)")]
+    async fn same_child(
+        &self,
+        ctx: &Context<'_>,
+        after: Option<String>,
+        before: Option<String>,
+        first: Option<i32>,
+        last: Option<i32>,
+    ) -> Result<ListConnection<GqlSongSummary>> {
+        let siblings =
+            load_siblings(ctx, RefScheme::Child, &self.0.refs.child, &self.0.path).await?;
+        paginate(
+            siblings,
+            PageArgs {
+                after,
+                before,
+                first,
+                last,
+            },
+            |s| s.0.path.clone(),
         )
     }
 }
@@ -790,6 +1011,49 @@ impl GqlAlbum {
         self.0.source.into()
     }
 
+    /// The credited artist's own page on the archive.
+    ///
+    /// **Two requests: a song search for the credited name, then that artist's
+    /// page.** A credit is a name as printed — the archive gives releases no
+    /// link to an artist — so the path has to be recovered. Songs are filed
+    /// under their artist (`/martin.carthy/songs/…`), so a search for the name
+    /// yields paths the credit itself does not, and the artist those paths agree
+    /// on is loaded and returned **only if their name matches the credit**.
+    ///
+    /// Null when it does not, which is both common and the right answer: a
+    /// compilation credited to "Various Artists", or a duo credit belonging to
+    /// no single page, has no artist to point at, and a confident wrong link
+    /// would be worse than none.
+    #[graphql(complexity = "20 + child_complexity")]
+    async fn artist_ref(&self, ctx: &Context<'_>) -> Result<Option<GqlArtist>> {
+        let Some(credited) = self
+            .0
+            .artist
+            .as_deref()
+            .map(str::trim)
+            .filter(|credit| !credit.is_empty())
+        else {
+            return Ok(None);
+        };
+
+        let found = ctx
+            .data::<SongSearches>()?
+            .load_one(SongSearch {
+                author: Some(credited.to_string()),
+                ..Default::default()
+            })
+            .await
+            .map_err(to_gql_error)?
+            .unwrap_or_default();
+
+        let Some(path) = artist_path_of(&found) else {
+            return Ok(None);
+        };
+        Ok(load_artist(ctx, &path)
+            .await?
+            .filter(|artist| artist.0.name.trim().eq_ignore_ascii_case(credited)))
+    }
+
     /// The tracklist. **Fetches this album's page**, one request per album.
     ///
     /// Free only where the album was reached by `album(path:)`, which fetched
@@ -841,6 +1105,58 @@ impl GqlTrack {
             Some(path) => load_song(ctx, path).await,
             None => Ok(None),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn summary(path: &str) -> SongSummary {
+        SongSummary {
+            path: path.into(),
+            title: "x".into(),
+            titles: vec!["x".into()],
+            refs: SongRefs::default(),
+            source: Source::MainlyNorfolk,
+        }
+    }
+
+    #[test]
+    fn an_artist_path_is_the_first_segment_of_their_songs() {
+        let found = [
+            summary("/martin.carthy/songs/theelfinknight.html"),
+            summary("/martin.carthy/songs/scarboroughfair.html"),
+        ];
+        assert_eq!(artist_path_of(&found), Some("/martin.carthy/".to_string()));
+    }
+
+    #[test]
+    fn the_artist_the_results_mostly_agree_on_wins() {
+        // A search for one name returns songs filed under several artists —
+        // the archive files a song once, under whoever it credits first.
+        let found = [
+            summary("/eliza.carthy/songs/a.html"),
+            summary("/martin.carthy/songs/b.html"),
+            summary("/martin.carthy/songs/c.html"),
+        ];
+        assert_eq!(artist_path_of(&found), Some("/martin.carthy/".to_string()));
+    }
+
+    #[test]
+    fn a_tie_goes_to_the_first_listed_so_the_answer_is_stable() {
+        let found = [
+            summary("/lloyd/songs/a.html"),
+            summary("/martin.carthy/songs/b.html"),
+        ];
+        assert_eq!(artist_path_of(&found), Some("/lloyd/".to_string()));
+    }
+
+    #[test]
+    fn nothing_to_go_on_resolves_to_no_artist() {
+        assert_eq!(artist_path_of(&[]), None);
+        // A path with no directory of its own names no artist.
+        assert_eq!(artist_path_of(&[summary("/")]), None);
     }
 }
 

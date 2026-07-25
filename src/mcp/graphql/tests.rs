@@ -32,6 +32,7 @@ fn the_sdl_declares_the_whole_graph() {
         "type Label",
         "type WaterwaysSong",
         "type ArtistRecords",
+        "type Book",
         "type Page",
         "type LyricVersion",
         "type Note",
@@ -53,6 +54,7 @@ fn the_sdl_declares_the_whole_graph() {
         "type LabelConnection",
         "type WaterwaysSongConnection",
         "type ArtistRecordsConnection",
+        "type BookConnection",
     ] {
         assert!(
             sdl.contains(connection),
@@ -75,6 +77,7 @@ fn the_sdl_declares_every_root_field() {
         "labels(",
         "waterwaysSongs(",
         "waterwaysSong(",
+        "books(",
         "page(",
     ] {
         assert!(
@@ -98,6 +101,13 @@ fn the_lazy_edges_are_all_there() {
         "biography: Page",
         "discography(",
         "albums(",
+        // The sibling edges, which are what make the graph recurse sideways
+        // rather than only downwards.
+        "sameRoud(",
+        "sameChild(",
+        // A release's credit back to the artist, and a citation to the book.
+        "artistRef: Artist",
+        "book: Book",
     ] {
         assert!(
             sdl.contains(edge),
@@ -131,6 +141,14 @@ fn the_sdl_says_what_the_expensive_edges_cost() {
         "670KB",
         // The filter grammar, which has no other documentation.
         "inclusive range",
+        // `sameRoud` is only usable for recursion if the caller knows the song
+        // is not in its own results, and that one search covers the lot.
+        "not a crawl",
+        "excluded from its own results",
+        // `artistRef` returning null is the normal case, not a failure.
+        "only if their name matches the credit",
+        // The bibliography being one page however many citations resolve.
+        "one page whether one book asks or a hundred do",
     ] {
         assert!(
             sdl.contains(needle),
@@ -163,18 +181,37 @@ async fn introspection_answers_without_touching_an_archive() {
     assert!(types.iter().any(|t| t["name"] == "Song"));
 }
 
-#[tokio::test]
-async fn a_query_deeper_than_the_cap_is_rejected_before_it_fetches_anything() {
-    // The cycle: song → recordings → nodes → album → tracks → song → …
-    // Rejected during validation, so no resolver runs and nothing is fetched —
-    // which is why this test can exist without a mock archive.
-    let deep = format!(
-        r#"{{ song(path: "/x.html") {{ {} title {} }} }}"#,
-        "recordings { nodes { album { tracks { song { ".repeat(4),
-        "} } } } }".repeat(4)
-    );
-    let response = schema().execute(&deep).await;
+/// Nest `levels` deep through introspection's own recursive `__Type.ofType`.
+///
+/// The depth validator does not care which fields it is counting, and this shape
+/// resolves entirely from the schema — so the cap can be tested from both sides
+/// without a single request. Nesting the *archive's* cycles that far would mean
+/// fetching pages the moment a query is legal enough to run.
+fn nested_introspection(levels: usize) -> String {
+    format!(
+        r#"{{ __type(name: "Song") {{ {} name {} }} }}"#,
+        "ofType { ".repeat(levels),
+        "}".repeat(levels)
+    )
+}
 
+#[tokio::test]
+async fn depth_is_capped_well_above_what_the_graph_needs() {
+    // The cap is a stop on runaway cycles, not a discouragement — the schema's
+    // own worked example (artist → discography → album → tracks → song →
+    // recordings → album → tracks → song) is nine levels, and recursing through
+    // `sameRoud` from there has to stay comfortably legal.
+    let response = schema().execute(&nested_introspection(25)).await;
+    assert!(
+        response.errors.is_empty(),
+        "25 levels must be allowed: {:?}",
+        response.errors
+    );
+}
+
+#[tokio::test]
+async fn our_own_cap_is_what_stops_a_runaway_query() {
+    let response = schema().execute(&nested_introspection(29)).await;
     let message = response
         .errors
         .first()
@@ -183,15 +220,45 @@ async fn a_query_deeper_than_the_cap_is_rejected_before_it_fetches_anything() {
     assert!(message.contains("too deep"), "{:?}", response.errors);
 }
 
+/// There are two backstops, and the second one bounds the first: async-graphql's
+/// *parser* refuses to recurse past 32 whatever the schema says, so it fires
+/// before `limit_depth` for anything wildly nested. Both reject before a
+/// resolver runs, which is the property that matters — but it does mean a
+/// `MAX_DEPTH` above 32 would be configuration that never takes effect. Pinned
+/// here so raising the cap further is a deliberate act rather than a silent
+/// no-op.
 #[tokio::test]
-async fn a_shallow_query_passes_validation() {
-    // The other half of the depth test: the cap must not reject ordinary work.
-    // Validation only — the resolver would fetch, so this asserts on the error
-    // being absent from *validation*, which is what an unknown field would give.
-    let response = schema()
-        .execute("{ __type(name: \"Song\") { fields { name } } }")
-        .await;
-    assert!(response.errors.is_empty(), "{:?}", response.errors);
+async fn the_parsers_own_recursion_limit_bounds_how_high_the_cap_can_go() {
+    let response = schema().execute(&nested_introspection(40)).await;
+    let message = response.errors.first().map(|e| e.message.clone());
+    assert_eq!(
+        message.as_deref(),
+        Some("The recursion depth of the query cannot be greater than `32`"),
+        "{:?}",
+        response.errors
+    );
+}
+
+#[tokio::test]
+async fn a_runaway_walk_of_the_archive_never_reaches_a_resolver() {
+    // The cycle the cap exists for: song → recordings → album → tracks → song →
+    // … Rejected before execution, so no resolver runs and nothing is fetched —
+    // which is why this test can exist without a mock archive.
+    let deep = format!(
+        r#"{{ song(path: "/x.html") {{ {} title {} }} }}"#,
+        "recordings { nodes { album { tracks { song { ".repeat(9),
+        "} } } } }".repeat(9)
+    );
+    let response = schema().execute(&deep).await;
+    assert!(
+        !response.errors.is_empty(),
+        "a 45-level walk of the archive was allowed to run"
+    );
+    assert_eq!(
+        response.data,
+        async_graphql::Value::Null,
+        "it resolved something"
+    );
 }
 
 #[tokio::test]

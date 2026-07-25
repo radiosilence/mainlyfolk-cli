@@ -28,8 +28,21 @@
 //!
 //! Loaders are built **per GraphQL request** (see [`super::request`]), so their
 //! cache is a request-scoped cache: repeating a key inside one query is free,
-//! and nothing is held long enough to go stale. The disk cache underneath
-//! ([`crate::client`]) is what spans requests.
+//! and nothing is held long enough to go stale.
+//!
+//! # These are not the client's cache
+//!
+//! [`crate::client`] holds its own process-wide cache of page *bodies*, so the
+//! obvious question is what these add. The answer is the parse. A cached body is
+//! still 670KB of HTML that `scraper` has to walk into 5,391 structs every time
+//! somebody asks; the client can save the refetch, but only a loader can say
+//! "you already have this parsed". So the two stack rather than overlap:
+//!
+//! - the client's memory cache saves the request and the disk read,
+//! - the loaders save the parse, and hold the result by `Arc` so a page of
+//!   results shares one allocation rather than a clone each.
+//!
+//! Dropping either one leaves real work being redone.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -41,7 +54,7 @@ use super::types::RefScheme;
 use crate::archive::{SongQuery, paths};
 use crate::client::{self, Client};
 use crate::error::Error;
-use crate::models::{Album, Artist, Label, Song, SongSummary, Source, Track, WaterwaysSong};
+use crate::models::{Album, Artist, Book, Label, Song, SongSummary, Source, Track, WaterwaysSong};
 use crate::parse;
 
 /// Loader errors are cloned out to every waiter in a batch, so they must be
@@ -98,7 +111,7 @@ impl Loader<PageKey> for PageLoader {
         for (key, body) in client::fan_out(calls).await {
             match body {
                 Ok(html) => {
-                    out.insert(key, Arc::new(html));
+                    out.insert(key, html);
                 }
                 // The archive is decades of hand-written HTML with plenty of
                 // dead links in it. One 404 must not sink a query that asked
@@ -233,6 +246,8 @@ pub enum IndexKind {
     Songs,
     /// The record labels with a discography, read from the site navigation.
     Labels,
+    /// The bibliography — every book the archive's song pages cite.
+    Books,
 }
 
 impl IndexKind {
@@ -242,33 +257,44 @@ impl IndexKind {
             IndexKind::Laws => paths::LAWS_INDEX,
             IndexKind::Songs => paths::SONG_INDEX,
             IndexKind::Labels => paths::FOLK,
+            IndexKind::Books => paths::BOOKS,
         }
     }
 }
 
 /// What an index page parses into.
 ///
-/// Two shapes under one loader because they are the same job — fetch one
+/// Several shapes under one loader because they are the same job — fetch one
 /// whole-list page, parse the lot — and sharing the loader is what makes that
-/// parse happen once per request however many resolvers ask for it.
+/// parse happen once per request however many resolvers ask for it. The
+/// bibliography is the case that earns it: every `BookRef` on a song resolves
+/// through the same parsed list.
 #[derive(Clone)]
 pub enum Index {
     Songs(Arc<Vec<SongSummary>>),
     Labels(Arc<Vec<Label>>),
+    Books(Arc<Vec<Book>>),
 }
 
 impl Index {
     pub fn songs(&self) -> Option<Arc<Vec<SongSummary>>> {
         match self {
             Index::Songs(songs) => Some(songs.clone()),
-            Index::Labels(_) => None,
+            _ => None,
         }
     }
 
     pub fn labels(&self) -> Option<Arc<Vec<Label>>> {
         match self {
             Index::Labels(labels) => Some(labels.clone()),
-            Index::Songs(_) => None,
+            _ => None,
+        }
+    }
+
+    pub fn books(&self) -> Option<Arc<Vec<Book>>> {
+        match self {
+            Index::Books(books) => Some(books.clone()),
+            _ => None,
         }
     }
 }
@@ -297,6 +323,7 @@ impl Loader<IndexKind> for IndexLoader {
             };
             let index = match kind {
                 IndexKind::Labels => Index::Labels(Arc::new(parse::labels(html))),
+                IndexKind::Books => Index::Books(Arc::new(parse::books(html, &key.path))),
                 _ => Index::Songs(Arc::new(parse::song_list(html, &key.path))),
             };
             out.insert(*kind, index);
