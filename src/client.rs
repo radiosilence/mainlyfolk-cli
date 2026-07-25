@@ -16,8 +16,9 @@
 //!   hundreds of page loads. [`MAX_CONCURRENT`] is what stands between that and
 //!   a small server having a bad afternoon.
 
+use std::collections::{HashMap, VecDeque};
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use serde::{Deserialize, Serialize};
@@ -89,15 +90,66 @@ fn cache_key(url: &str) -> String {
     format!("{:x}.json", Sha256::digest(url.as_bytes()))
 }
 
-/// Fetches pages from the archives, with a disk cache in front.
+/// Pages held in memory before the disk cache is consulted.
 ///
-/// Cloneable and cheap to clone — the HTTP client, semaphore and cache
-/// directory are shared. One instance per process is the intent.
+/// Sized for a long-running MCP server rather than a CLI invocation. A deep
+/// graph query walks the same handful of hub pages over and over — the Child
+/// index, an artist's discography, the album every track on it points back to —
+/// and this is what makes the second visit free rather than a deserialise.
+/// 512 pages is a few hundred MB at the archive's largest, and far more than
+/// any single query touches.
+const MEMORY_CACHE_ENTRIES: usize = 512;
+
+/// The process-wide page cache: URL → body, with a rough LRU bound.
+///
+/// `Arc<String>` because these are handed to many resolvers at once and the
+/// bodies are large — the song index alone is 670KB, and cloning it per
+/// resolver was the whole cost this avoids.
+#[derive(Default)]
+struct MemoryCache {
+    entries: HashMap<String, Arc<String>>,
+    /// Insertion order, used to evict the oldest once [`MEMORY_CACHE_ENTRIES`]
+    /// is reached. Not a true LRU — reads don't promote — because the access
+    /// pattern here is "fetch once, read many within one query", where
+    /// insertion order and recency barely differ and the bookkeeping isn't
+    /// worth it.
+    order: VecDeque<String>,
+}
+
+impl MemoryCache {
+    fn get(&self, url: &str) -> Option<Arc<String>> {
+        self.entries.get(url).cloned()
+    }
+
+    fn insert(&mut self, url: String, body: Arc<String>) {
+        if self.entries.insert(url.clone(), body).is_none() {
+            self.order.push_back(url);
+        }
+        while self.order.len() > MEMORY_CACHE_ENTRIES {
+            if let Some(oldest) = self.order.pop_front() {
+                self.entries.remove(&oldest);
+            }
+        }
+    }
+}
+
+/// Fetches pages from the archives, with two caches in front.
+///
+/// Cloneable and cheap to clone — the HTTP client, semaphore, memory cache and
+/// cache directory are all shared. One instance per process is the intent, and
+/// the memory cache is the reason: clone it freely, but do not build a second
+/// one.
+///
+/// The layers, cheapest first: memory, then disk, then a conditional request,
+/// then a real fetch. The archive is decades-old material that changes a few
+/// times a month, so nearly every read past the first should stop at the first
+/// layer.
 #[derive(Clone)]
 pub struct Client {
     http: reqwest::Client,
     limiter: Arc<Semaphore>,
     cache: Option<PathBuf>,
+    memory: Arc<Mutex<MemoryCache>>,
 }
 
 impl Client {
@@ -109,16 +161,29 @@ impl Client {
                 .build()?,
             limiter: Arc::new(Semaphore::new(MAX_CONCURRENT)),
             cache: cache_dir(),
+            memory: Arc::new(Mutex::new(MemoryCache::default())),
         })
     }
 
     /// A client that never touches the disk cache. For tests, and for
-    /// `--no-cache`.
+    /// `--no-cache`. The memory cache stays — it holds nothing across runs, so
+    /// it can't serve anything stale, and turning it off would only mean
+    /// fetching the same page twice inside one command.
     pub fn uncached() -> Result<Self> {
         Ok(Self {
             cache: None,
             ..Self::new()?
         })
+    }
+
+    fn memory_get(&self, url: &str) -> Option<Arc<String>> {
+        self.memory.lock().ok()?.get(url)
+    }
+
+    fn memory_put(&self, url: &str, body: &Arc<String>) {
+        if let Ok(mut memory) = self.memory.lock() {
+            memory.insert(url.to_string(), body.clone());
+        }
     }
 
     /// Fetch `path` from `source`, serving from cache when possible.
@@ -128,15 +193,22 @@ impl Client {
     /// the reason resolvers hand paths to this rather than building URLs
     /// themselves: a model composing a GraphQL query must not be able to turn
     /// this tool into an open proxy.
-    pub async fn get(&self, source: Source, path: &str) -> Result<String> {
+    pub async fn get(&self, source: Source, path: &str) -> Result<Arc<String>> {
         let url = absolute_url(source, path)?;
+
+        if let Some(body) = self.memory_get(&url) {
+            tracing::debug!(%url, "memory hit");
+            return Ok(body);
+        }
 
         let cached = self.read_cache(&url);
         if let Some(entry) = &cached
             && entry.is_fresh()
         {
-            tracing::debug!(%url, "cache hit");
-            return Ok(entry.body.clone());
+            tracing::debug!(%url, "disk hit");
+            let body = Arc::new(entry.body.clone());
+            self.memory_put(&url, &body);
+            return Ok(body);
         }
 
         let _permit = self
@@ -166,7 +238,9 @@ impl Client {
             tracing::debug!(%url, "not modified");
             entry.fetched_at = SystemTime::now();
             self.write_cache(&entry);
-            return Ok(entry.body);
+            let body = Arc::new(entry.body);
+            self.memory_put(&url, &body);
+            return Ok(body);
         }
 
         if !status.is_success() {
@@ -174,7 +248,7 @@ impl Client {
             // shouldn't make a page we already have unreadable.
             if let Some(entry) = cached {
                 tracing::warn!(%url, %status, "serving stale cache");
-                return Ok(entry.body);
+                return Ok(Arc::new(entry.body));
             }
             return Err(Error::Fetch {
                 url,
@@ -197,7 +271,9 @@ impl Client {
             fetched_at: SystemTime::now(),
         };
         self.write_cache(&entry);
-        Ok(entry.body)
+        let body = Arc::new(entry.body);
+        self.memory_put(&url, &body);
+        Ok(body)
     }
 
     /// POST a form, for the archive's own `search.php` endpoints.
@@ -211,15 +287,22 @@ impl Client {
         source: Source,
         path: &str,
         form: &[(&str, &str)],
-    ) -> Result<String> {
+    ) -> Result<Arc<String>> {
         let url = absolute_url(source, path)?;
         let key = format!("{url}#form:{}", serde_json::to_string(form)?);
+
+        if let Some(body) = self.memory_get(&key) {
+            tracing::debug!(%url, "search memory hit");
+            return Ok(body);
+        }
 
         if let Some(entry) = self.read_cache(&key)
             && entry.is_fresh()
         {
-            tracing::debug!(%url, "search cache hit");
-            return Ok(entry.body);
+            tracing::debug!(%url, "search disk hit");
+            let body = Arc::new(entry.body);
+            self.memory_put(&key, &body);
+            return Ok(body);
         }
 
         let _permit = self
@@ -245,7 +328,9 @@ impl Client {
             fetched_at: SystemTime::now(),
         };
         self.write_cache(&entry);
-        Ok(entry.body)
+        let body = Arc::new(entry.body);
+        self.memory_put(&entry.url, &body);
+        Ok(body)
     }
 
     fn read_cache(&self, key: &str) -> Option<CacheEntry> {
@@ -427,6 +512,29 @@ mod tests {
         );
         let ext = "https://mudcat.org/thread.cfm?threadid=1";
         assert_eq!(resolve_path(ext, "/folk/songs/"), ext);
+    }
+
+    #[test]
+    fn the_memory_cache_evicts_oldest_first_and_stays_bounded() {
+        let mut cache = MemoryCache::default();
+        for i in 0..MEMORY_CACHE_ENTRIES + 10 {
+            cache.insert(format!("/page/{i}"), Arc::new(String::new()));
+        }
+        assert_eq!(cache.entries.len(), MEMORY_CACHE_ENTRIES);
+        assert!(cache.get("/page/0").is_none(), "oldest should have gone");
+        assert!(cache.get("/page/511").is_some(), "newest should be held");
+    }
+
+    #[test]
+    fn re_inserting_a_page_does_not_grow_the_eviction_queue() {
+        // Otherwise a hub page fetched repeatedly would evict the whole cache
+        // by filling `order` with its own duplicates.
+        let mut cache = MemoryCache::default();
+        for _ in 0..50 {
+            cache.insert("/folk/songs/".into(), Arc::new(String::new()));
+        }
+        assert_eq!(cache.order.len(), 1);
+        assert_eq!(cache.entries.len(), 1);
     }
 
     #[test]
