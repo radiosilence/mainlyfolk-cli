@@ -9,6 +9,16 @@ use crate::archive::Archive;
 use crate::client::Client;
 use crate::error::Result;
 
+mod pages;
+mod records;
+mod songs;
+mod waterways;
+
+pub use pages::{latest, page};
+pub use records::{album, artist, labels, records};
+pub use songs::{child, laws, search, song};
+pub use waterways::waterways;
+
 /// Build the archive accessor a command works through.
 pub fn archive(no_cache: bool) -> Result<Archive> {
     Ok(Archive::new(if no_cache {
@@ -16,36 +26,6 @@ pub fn archive(no_cache: bool) -> Result<Archive> {
     } else {
         Client::new()?
     }))
-}
-
-macro_rules! todo_command {
-    ($($name:ident ( $($arg:ident : $ty:ty),* $(,)? )),* $(,)?) => {
-        $(
-            pub async fn $name(no_cache: bool, $($arg: $ty),*) -> Result<()> {
-                let _ = (no_cache, $($arg),*);
-                todo!(concat!(stringify!($name), " is not implemented yet"))
-            }
-        )*
-    };
-}
-
-todo_command! {
-    search(
-        query: Option<&str>,
-        author: Option<&str>,
-        scheme: Option<crate::archive::RefKey>,
-        number: Option<&str>,
-    ),
-    song(path: &str, lyrics_only: bool),
-    child(filter: Option<&str>),
-    laws(filter: Option<&str>),
-    artist(name: &str),
-    records(query: &str),
-    album(path: &str),
-    labels(),
-    waterways(query: Option<&str>),
-    page(path: &str),
-    latest(),
 }
 
 /// Report on, or empty, the on-disk page cache.
