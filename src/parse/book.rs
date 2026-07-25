@@ -167,8 +167,10 @@ fn split_authors(raw: &str) -> Vec<String> {
 }
 
 /// Publisher and year from the text after a book's title. The year is the
-/// last 18xx/19xx/20xx run in the text — reprints get listed after the
-/// original edition, and the most recent date is the one worth surfacing.
+/// EARLIEST 18xx/19xx/20xx run in the text — a reprint or later edition is
+/// routinely listed after the original, but the original year is what a
+/// song citing the book actually means: it's when the songs were collected
+/// and published. Deliberately not the latest printing.
 fn split_publisher_and_year(raw: &str) -> (Option<String>, Option<String>) {
     let publisher_text = match find_year(raw) {
         Some((year, start, end)) => {
@@ -202,11 +204,12 @@ fn clean_publisher(text: &str) -> String {
     squash(text.trim_matches(|c: char| c.is_whitespace() || matches!(c, ',' | '.' | ';' | ':')))
 }
 
-/// The last standalone 18xx/19xx/20xx run in `text`, with its byte range so
-/// the caller can strip it back out to build the publisher string.
+/// The first standalone 18xx/19xx/20xx run in `text`, with its byte range so
+/// the caller can strip it back out to build the publisher string. First,
+/// not last: the archive lists an original edition before any reprint, and
+/// the original is the year that matters for a citation.
 fn find_year(text: &str) -> Option<(String, usize, usize)> {
     let chars: Vec<(usize, char)> = text.char_indices().collect();
-    let mut found = None;
     for i in 0..chars.len() {
         if i + 4 > chars.len() {
             break;
@@ -229,10 +232,10 @@ fn find_year(text: &str) -> Option<(String, usize, usize)> {
             } else {
                 text.len()
             };
-            found = Some((digits, start, end));
+            return Some((digits, start, end));
         }
     }
-    found
+    None
 }
 
 #[cfg(test)]
@@ -291,6 +294,21 @@ mod tests {
             .expect("baringgould entry");
         assert_eq!(baringgould.authors.len(), 2);
         assert_eq!(baringgould.path, "/folk/books/songsofthewest.html");
+        // The fixture lists both the 1913 5th edition and a 2010 reprint —
+        // the original year is what dates the songs it's cited for.
+        assert_eq!(baringgould.year.as_deref(), Some("1913"));
+    }
+
+    #[test]
+    fn year_is_the_original_edition_not_a_later_reprint() {
+        let books = books();
+        let bruce = books
+            .iter()
+            .find(|b| b.id == "bruce:northumbrianminstrelsy")
+            .expect("bruce entry");
+        // "Society of Antiquaries ... 1882; Hatboro, Pennsylvania: Folklore
+        // Associates, Inc., 1965 (facsimile reprint)" — 1882 is the original.
+        assert_eq!(bruce.year.as_deref(), Some("1882"));
     }
 
     #[test]
