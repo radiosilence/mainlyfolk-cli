@@ -9,11 +9,13 @@ use crate::archive::Archive;
 use crate::client::Client;
 use crate::error::Result;
 
+mod books;
 mod pages;
 mod records;
 mod songs;
 mod waterways;
 
+pub use books::books;
 pub use pages::{latest, page};
 pub use records::{album, artist, labels, records};
 pub use songs::{child, laws, search, song};

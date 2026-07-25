@@ -16,7 +16,9 @@
 
 use crate::client::Client;
 use crate::error::{Error, Result};
-use crate::models::{Album, Artist, Label, Page, Song, SongSummary, Source, Track, WaterwaysSong};
+use crate::models::{
+    Album, Artist, Book, Label, Page, Song, SongSummary, Source, Track, WaterwaysSong,
+};
 use crate::parse;
 
 /// Paths that are structural rather than content — the entry points every
@@ -222,6 +224,18 @@ impl Archive {
     pub async fn label_albums(&self, path: &str) -> Result<Vec<Album>> {
         let html = self.client.get(Source::MainlyNorfolk, path).await?;
         Ok(parse::discography(&html, path))
+    }
+
+    // ============ Bibliography ============
+
+    /// Every book in the archive's bibliography.
+    ///
+    /// One page, so this is a single fetch — which is why song-page citations
+    /// are resolved by looking them up here rather than by following each
+    /// citation's own link.
+    pub async fn books(&self) -> Result<Vec<Book>> {
+        let html = self.client.get(Source::MainlyNorfolk, paths::BOOKS).await?;
+        Ok(parse::books(&html, paths::BOOKS))
     }
 
     // ============ Waterways ============
