@@ -99,9 +99,22 @@ fn push_attribution(
     }
     out.push(Attribution {
         artist,
-        artist_path: resolve_path(&href, base),
+        artist_path: artist_index_path(&href, base),
         title,
     });
+}
+
+/// An artist's id is their directory (`/martin.carthy/`), not the `index.html`
+/// page in it — that's the form the CLI derives from every other path and the
+/// GraphQL layer's `ArtistLoader` keys on, so a breadcrumb resolving to
+/// `/martin.carthy/index.html` would otherwise enter the graph as a different
+/// artist than the one reached any other way.
+fn artist_index_path(href: &str, base: &str) -> String {
+    let resolved = resolve_path(href, base);
+    match resolved.strip_suffix("index.html") {
+        Some(dir) => dir.to_string(),
+        None => resolved,
+    }
 }
 
 /// The reference line is the one `<p>` whose text starts with `[`: Roud,
@@ -298,6 +311,11 @@ fn parse_notes(article: &ElementRef) -> Vec<Note> {
 
 const ATTRIBUTION_VERBS: [&str; 5] = ["noted:", "wrote:", "commented:", "said:", "notes:"];
 
+/// A note's attribution is who is being quoted, not the paragraph of context
+/// that leads into the quote. Longest sane attribution seen in practice is a
+/// name plus a role; a clause past this is context that leaked in, not a name.
+const MAX_ATTRIBUTION_LEN: usize = 120;
+
 fn preceding_attribution(blockquote: ElementRef) -> Option<String> {
     let mut sibling = blockquote.prev_sibling();
     while let Some(node) = sibling {
@@ -306,14 +324,64 @@ fn preceding_attribution(blockquote: ElementRef) -> Option<String> {
                 return None;
             }
             let text = squash(&el.text().collect::<String>());
-            return ATTRIBUTION_VERBS
-                .iter()
-                .any(|verb| text.ends_with(verb))
-                .then_some(text);
+            return attribution_clause(&text);
         }
         sibling = node.prev_sibling();
     }
     None
+}
+
+/// Trims a preceding paragraph down to the clause that actually names who's
+/// being quoted: the paragraph's last sentence, with the trailing attribution
+/// verb dropped. A paragraph is prose leading up to a quote ("...on the
+/// anthology X. The album's booklet noted:"), so only that last sentence is
+/// the attribution — the rest is the context the note itself already covers.
+fn attribution_clause(paragraph: &str) -> Option<String> {
+    if !ATTRIBUTION_VERBS
+        .iter()
+        .any(|verb| paragraph.ends_with(verb))
+    {
+        return None;
+    }
+    let sentence = last_sentence(paragraph);
+    let clause = ATTRIBUTION_VERBS
+        .iter()
+        .find_map(|verb| sentence.strip_suffix(verb))
+        .unwrap_or(sentence)
+        .trim();
+
+    (!clause.is_empty() && clause.chars().count() <= MAX_ATTRIBUTION_LEN)
+        .then(|| clause.to_string())
+}
+
+/// The text after the last sentence boundary in `text`. A `. ` is a boundary
+/// unless the period closes a single-letter initial ("Kenneth S. Goldstein"),
+/// which this tells apart from a real sentence end by checking that the
+/// letter before the period starts a word of its own.
+fn last_sentence(text: &str) -> &str {
+    let chars: Vec<(usize, char)> = text.char_indices().collect();
+    let mut start = 0;
+
+    for i in 0..chars.len() {
+        let (_, c) = chars[i];
+        if c != '.' {
+            continue;
+        }
+        let Some(&(next_pos, next_c)) = chars.get(i + 1) else {
+            continue;
+        };
+        if next_c != ' ' {
+            continue;
+        }
+        let is_initial = i >= 1
+            && chars[i - 1].1.is_ascii_uppercase()
+            && (i < 2 || !chars[i - 2].1.is_alphanumeric());
+        if !is_initial {
+            start = next_pos + 1;
+        }
+    }
+
+    text[start..].trim()
 }
 
 /// A recording is a prose `<p>` citing an album: any `<cite><a>` pointing at
@@ -383,13 +451,20 @@ fn is_excluded_from_prose(p: ElementRef) -> bool {
 }
 
 /// Text up to the first "sang"/"sings"/"sing" verb, squashed — how the
-/// archive's prose names a performer before saying what they did.
+/// archive's prose names a performer before saying what they did. Trailing
+/// punctuation is the sentence's, not the name's ("Martha Reid of
+/// Blairgowrie, Perthshire," sang ...); the apposition itself is kept.
 fn split_before_verb(text: &str) -> Option<String> {
     [" sang ", " sings ", " sing "]
         .into_iter()
         .filter_map(|verb| text.find(verb))
         .min()
-        .map(|idx| squash(&text[..idx]))
+        .map(|idx| {
+            squash(&text[..idx])
+                .trim_end_matches([',', ';'])
+                .trim_end()
+                .to_string()
+        })
         .filter(|s| !s.is_empty())
 }
 
@@ -473,6 +548,25 @@ mod tests {
         assert!(artists.contains(&"Martin Carthy"));
         assert!(artists.contains(&"Shirley Collins"));
 
+        // An artist's id is their directory, not the breadcrumb's literal
+        // `index.html` href — everywhere else in the codebase keys on the
+        // directory form, so the two must match or the same artist enters
+        // the graph under two different ids depending on how it was reached.
+        let martin_carthy = song
+            .attributions
+            .iter()
+            .find(|a| a.artist == "Martin Carthy")
+            .expect("Martin Carthy attribution");
+        assert_eq!(martin_carthy.artist_path, "/martin.carthy/");
+
+        // Only artist_path is normalised — a book or album path is a real
+        // file and must keep its filename.
+        assert!(
+            song.bibliography
+                .iter()
+                .any(|b| b.path.as_deref().is_some_and(|p| p.ends_with(".html")))
+        );
+
         let lloyd = song
             .lyrics
             .iter()
@@ -488,11 +582,29 @@ mod tests {
         assert!(lloyd.text.contains("Savoury, sage, rosemary and thyme"));
 
         assert!(!song.notes.is_empty());
+        // A note's attribution is a name, not the paragraph of context that
+        // leads into the quote.
+        let first_note_attribution = song.notes[0].attribution.as_deref().unwrap();
+        assert_eq!(first_note_attribution, "The album\u{2019}s booklet");
+        assert!(first_note_attribution.len() < 120);
+
         assert!(!song.recordings.is_empty());
         assert!(
             song.recordings
                 .iter()
                 .any(|r| r.album_path.as_deref().is_some_and(|p| p.starts_with('/')))
+        );
+
+        // Trailing punctuation from the sentence, not the name, is stripped;
+        // the "of Blairgowrie, Perthshire" apposition itself is kept.
+        let martha_reid = song
+            .recordings
+            .iter()
+            .find(|r| r.performer.as_deref().is_some_and(|p| p.contains("Reid")))
+            .expect("Martha Reid recording");
+        assert_eq!(
+            martha_reid.performer.as_deref(),
+            Some("Martha Reid of Blairgowrie, Perthshire")
         );
     }
 
