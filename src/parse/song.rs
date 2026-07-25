@@ -206,7 +206,7 @@ fn push_values(target: &mut Vec<String>, value: &str) {
         cut_at_aside(value)
             .split(',')
             .map(str::trim)
-            .filter(|v| !v.is_empty())
+            .filter(|v| super::is_reference_value(v))
             .map(String::from),
     );
 }

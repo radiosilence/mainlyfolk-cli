@@ -71,7 +71,7 @@ fn parse_comment_refs(comment: &str) -> SongRefs {
             values
                 .split(',')
                 .map(str::trim)
-                .filter(|v| !v.is_empty())
+                .filter(|v| super::is_reference_value(v))
                 .map(String::from),
         );
     }

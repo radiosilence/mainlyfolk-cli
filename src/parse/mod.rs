@@ -117,6 +117,17 @@ pub fn squash(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
+/// Whether a reference value is a real one.
+///
+/// The archive writes `Roud -` for a song it has no number for, and a bare `-`
+/// stored as a Roud number is worse than storing nothing: it looks like data,
+/// and `Song.sameRoud` feeds it straight back into the archive's own search,
+/// where it matches nothing. A real reference always carries a digit or a
+/// letter.
+pub fn is_reference_value(value: &str) -> bool {
+    value.chars().any(|c| c.is_ascii_alphanumeric())
+}
+
 /// Split a `/`-joined title line into its alternates.
 ///
 /// The archive writes one song's several names as
@@ -138,6 +149,17 @@ mod tests {
     #[test]
     fn squash_collapses_the_archives_indentation() {
         assert_eq!(squash("  The Elfin\n   Knight  "), "The Elfin Knight");
+    }
+
+    #[test]
+    fn a_dash_is_not_a_reference_number() {
+        // The archive writes "Roud -" where it has no number; storing the dash
+        // would poison every lookup keyed on it.
+        assert!(!is_reference_value("-"));
+        assert!(!is_reference_value(" — "));
+        assert!(is_reference_value("12"));
+        assert!(is_reference_value("P15"));
+        assert!(is_reference_value("2:329"));
     }
 
     #[test]

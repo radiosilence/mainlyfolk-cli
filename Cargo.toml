@@ -1,6 +1,6 @@
 [package]
 name = "mainlynorfolk-cli"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "CLI and MCP server for the Mainly Norfolk English folk music archive"
 repository = "https://github.com/radiosilence/mainlynorfolk-cli"
