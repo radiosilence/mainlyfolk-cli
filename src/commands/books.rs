@@ -57,8 +57,16 @@ mod tests {
     #[test]
     fn a_filter_matching_the_section_returns_that_whole_section() {
         let index = vec![
-            book("Songs of the West", &["Sabine Baring-Gould"], Some("Ballads and Songs")),
-            book("English Folk Song and Dance", &["Cecil Sharp"], Some("Folk Song and Music")),
+            book(
+                "Songs of the West",
+                &["Sabine Baring-Gould"],
+                Some("Ballads and Songs"),
+            ),
+            book(
+                "English Folk Song and Dance",
+                &["Cecil Sharp"],
+                Some("Folk Song and Music"),
+            ),
         ];
         let filtered = filter_books(index, Some("ballads and songs"));
         assert_eq!(filtered.len(), 1);
