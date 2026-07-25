@@ -167,7 +167,11 @@ impl QueryRoot {
     async fn artist(
         &self,
         ctx: &Context<'_>,
-        #[graphql(desc = "Path to the artist's index, e.g. /martin.carthy/")] path: String,
+        #[graphql(
+            desc = "Path to the artist's index, e.g. /martin.carthy/. A trailing index.html \
+                    names the same artist and resolves to the same node."
+        )]
+        path: String,
     ) -> Result<Option<GqlArtist>> {
         load_artist(ctx, &path).await
     }

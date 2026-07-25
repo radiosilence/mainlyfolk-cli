@@ -18,7 +18,7 @@ use async_graphql::{Context, Enum, Object, Result, SimpleObject};
 use super::connection::{ListConnection, PageArgs, page_complexity, paginate};
 use super::loaders::{
     Albums, Artists, Discographies, Index, IndexKind, Indexes, PageKey, Pages, SongSearch,
-    SongSearches, Songs, WaterwaysSongs, to_gql_error,
+    SongSearches, Songs, WaterwaysSongs, artist_key, to_gql_error,
 };
 use crate::archive::{RefKey, paths};
 use crate::models::{
@@ -162,10 +162,13 @@ pub(crate) async fn load_song(ctx: &Context<'_>, path: &str) -> Result<Option<Gq
         .map(GqlSong::from))
 }
 
+/// One artist, by any spelling of their path. The single funnel into
+/// [`Artists`], so [`artist_key`] normalising here is what guarantees no artist
+/// enters the graph twice.
 pub(crate) async fn load_artist(ctx: &Context<'_>, path: &str) -> Result<Option<GqlArtist>> {
     Ok(ctx
         .data::<Artists>()?
-        .load_one(path.to_string())
+        .load_one(artist_key(path))
         .await
         .map_err(to_gql_error)?
         .map(GqlArtist::from))
@@ -1089,7 +1092,9 @@ impl GqlTrack {
     async fn title(&self) -> &str {
         &self.0.title
     }
-    /// Playing time as printed, e.g. `"3:42"`.
+    /// Playing time as printed. The archive writes it with a decimal point —
+    /// `"2.31"` is two minutes thirty-one — though a colon turns up here and
+    /// there. Verbatim either way rather than normalised.
     async fn duration(&self) -> Option<&str> {
         self.0.duration.as_deref()
     }

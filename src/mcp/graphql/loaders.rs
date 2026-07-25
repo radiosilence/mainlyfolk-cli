@@ -189,7 +189,25 @@ impl Loader<String> for AlbumLoader {
     }
 }
 
-/// Artist index pages, keyed by path.
+/// The canonical key for an artist: the directory form, `/martin.carthy/`.
+///
+/// The archive serves `/martin.carthy/` and `/martin.carthy/index.html` as the
+/// same page, and its own markup uses both — a song page's breadcrumb reaches
+/// for one, a navigation link for the other. They have to collapse to one key or
+/// the same artist enters the graph as two nodes: the loader's dedup quietly
+/// stops working, and a recursive query returns copies of one artist that do not
+/// compare equal.
+pub fn artist_key(path: &str) -> String {
+    let path = path.split_once('#').map_or(path, |(p, _)| p);
+    let path = path
+        .strip_suffix("index.html")
+        .or_else(|| path.strip_suffix("index.htm"))
+        .unwrap_or(path);
+    format!("{}/", path.trim_end_matches('/'))
+}
+
+/// Artist index pages, keyed by the directory form of their path — see
+/// [`artist_key`].
 pub struct ArtistLoader(Arc<Pages>);
 
 impl Loader<String> for ArtistLoader {
@@ -491,6 +509,21 @@ mod tests {
         let b = PageKey::new(Source::MainlyNorfolk, "/folk/records/redrice.html#carthy");
         assert_eq!(a, b);
         assert_eq!(a.path, "/folk/records/redrice.html");
+    }
+
+    #[test]
+    fn every_spelling_of_an_artist_path_is_one_key() {
+        // The bug this prevents: two spellings, two nodes, and a recursive
+        // query handing back the same artist twice without them comparing equal.
+        for spelling in [
+            "/martin.carthy/",
+            "/martin.carthy",
+            "/martin.carthy/index.html",
+            "/martin.carthy/index.htm",
+            "/martin.carthy/#top",
+        ] {
+            assert_eq!(artist_key(spelling), "/martin.carthy/", "{spelling}");
+        }
     }
 
     #[test]
