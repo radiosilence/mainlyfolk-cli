@@ -34,7 +34,7 @@ pub fn parse(html: &str, path: &str) -> Result<Artist> {
         });
     }
     let name = match h1 {
-        Some(el) => squash(&el.text().collect::<String>()),
+        Some(el) => name_before_break(el),
         None => strip_site_suffix(&squash(&title_tag.unwrap().text().collect::<String>())),
     };
 
@@ -346,6 +346,28 @@ pub(crate) fn find_year(text: &str) -> Option<String> {
 /// catalogue number: the trailing run must contain at least one digit (an
 /// all-letter run like "UK" is a country code, not a catalogue number), and
 /// at least one word must remain outside it (there must be a label left).
+/// An artist's name from their `<h1>`, stopping at the first `<br>`.
+///
+/// The archive puts life dates on a second line — `Ewan MacColl<br>(25 January
+/// 1915 - 22 October 1989)` — and a `<br>` contributes no text, so squashing the
+/// whole heading yields "Ewan MacColl(25 January 1915 - 22 October 1989)". Those
+/// dates are real information but they are not the name, and they would follow
+/// the artist into every attribution that names them.
+fn name_before_break(h1: ElementRef) -> String {
+    let mut name = String::new();
+    for child in h1.children() {
+        if child.value().as_element().is_some_and(|e| e.name() == "br") {
+            break;
+        }
+        if let Some(text) = child.value().as_text() {
+            name.push_str(text);
+        } else if let Some(el) = ElementRef::wrap(child) {
+            name.push_str(&el.text().collect::<String>());
+        }
+    }
+    squash(&name)
+}
+
 pub(crate) fn split_label_and_catalogue(text: &str) -> (Option<String>, Option<String>) {
     let words: Vec<&str> = text.split_whitespace().collect();
     if words.is_empty() {
@@ -362,12 +384,22 @@ pub(crate) fn split_label_and_catalogue(text: &str) -> (Option<String>, Option<S
     while split > 0 && is_catalogue_word(words[split - 1]) {
         split -= 1;
     }
-    let catalogue_words = &words[split..];
-    let has_digit = catalogue_words
-        .iter()
-        .any(|w| w.chars().any(|c| c.is_ascii_digit()));
+    let has_digit = |ws: &[&str]| ws.iter().any(|w| w.chars().any(|c| c.is_ascii_digit()));
 
-    if split == 0 || catalogue_words.is_empty() || !has_digit {
+    // An all-caps label — HMV, EMI, RCA — is indistinguishable from a catalogue
+    // word, so the scan swallows the whole string and `split` lands at 0. Rather
+    // than give up and report no catalogue number, keep the first word as the
+    // label: "HMV DLP 1143" is HMV's DLP 1143, and every archive entry of this
+    // shape puts the label first. The digit has to be in what's left after that
+    // first word, or "TOP95" alone would masquerade as a catalogue number with
+    // no label. A label that stopped the scan on its own (`Fontana TL 5269`)
+    // never reaches here.
+    if split == 0 && words.len() > 1 && has_digit(&words[1..]) {
+        split = 1;
+    }
+    let catalogue_words = &words[split..];
+
+    if split == 0 || catalogue_words.is_empty() || !has_digit(catalogue_words) {
         let text = text.trim();
         return ((!text.is_empty()).then(|| text.to_string()), None);
     }
@@ -465,6 +497,62 @@ mod tests {
         assert!(albums.iter().any(|a| a.label.as_deref() == Some("Decca")
             && a.catalogue_number.as_deref() == Some("LK 4844")));
         assert!(albums.iter().all(|a| a.path.starts_with('/')));
+    }
+
+    #[test]
+    fn life_dates_on_a_second_line_are_not_part_of_the_name() {
+        // A `<br>` contributes no text, so squashing the whole heading would
+        // give "Ewan MacColl(25 January 1915 - 22 October 1989)" — and that
+        // string would then follow him into every attribution naming him.
+        let html = r#"<html><body><article id="mainArticle">
+            <h1>Ewan MacColl<br>(25 January 1915 - 22 October 1989)</h1>
+            </article></body></html>"#;
+        let artist = parse(html, "/ewan.maccoll/").unwrap();
+        assert_eq!(artist.name, "Ewan MacColl");
+    }
+
+    #[test]
+    fn a_heading_with_no_break_keeps_all_of_it() {
+        let html = r#"<html><body><article id="mainArticle">
+            <h1>Eliza Carthy &amp; Nancy Kerr</h1></article></body></html>"#;
+        let artist = parse(html, "/eliza.carthy/").unwrap();
+        assert_eq!(artist.name, "Eliza Carthy & Nancy Kerr");
+    }
+
+    #[test]
+    fn an_all_caps_label_keeps_its_catalogue_number() {
+        // HMV, EMI, RCA look exactly like catalogue words, so the right-to-left
+        // scan swallows the whole string. The first word is still the label.
+        assert_eq!(
+            split_label_and_catalogue("HMV DLP 1143"),
+            (Some("HMV".into()), Some("DLP 1143".into()))
+        );
+        assert_eq!(
+            split_label_and_catalogue("HMV CLP 1327"),
+            (Some("HMV".into()), Some("CLP 1327".into()))
+        );
+    }
+
+    #[test]
+    fn a_mixed_case_label_is_unaffected_by_the_all_caps_fallback() {
+        assert_eq!(
+            split_label_and_catalogue("Fontana TL 5269"),
+            (Some("Fontana".into()), Some("TL 5269".into()))
+        );
+        assert_eq!(
+            split_label_and_catalogue("Topic Records TSCD340"),
+            (Some("Topic Records".into()), Some("TSCD340".into()))
+        );
+    }
+
+    #[test]
+    fn a_lone_catalogue_word_is_a_label_not_a_catalogue_number() {
+        // Otherwise "TOP95" would be reported as a catalogue number belonging
+        // to no label at all.
+        assert_eq!(
+            split_label_and_catalogue("TOP95"),
+            (Some("TOP95".into()), None)
+        );
     }
 
     #[test]

@@ -3,6 +3,25 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-25
+
+### Fixed
+
+- **All-caps record labels kept their catalogue number.** `HMV DLP 1143` was
+  read as a label with no catalogue number at all, because the right-to-left
+  scan that finds a catalogue number cannot tell `HMV` from `DLP` — a
+  mixed-case label like `Fontana` stops the scan, an all-caps one never does.
+  The first word is now kept as the label in that case. Four of Shirley
+  Collins' first twelve releases were affected.
+- **`Roud -` is no longer stored as the reference number `-`.** The archive
+  writes a bare dash where it has no number, and a dash stored as a Roud number
+  looks like data while matching nothing — including through `Song.sameRoud`,
+  which feeds it back into the archive's own search.
+- **An artist's life dates are no longer part of their name.** The archive puts
+  them on a second line of the heading (`Ewan MacColl<br>(25 January 1915 - 22
+  October 1989)`), and a `<br>` contributes no text, so they were being
+  concatenated onto the name and carried into every attribution naming him.
+
 ## [0.1.0] - 2026-07-25
 
 The initial feature set rather than a set of changes against a released
