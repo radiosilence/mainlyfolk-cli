@@ -15,6 +15,18 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   already accept; `--completions zsh` was neither. The server flags stay flags,
   because they configure the thing that runs rather than replacing it.
 
+### Fixed
+
+- **A stale `Cargo.lock` no longer reaches the image build.** `check` builds and
+  tests with `--locked`, so a lockfile that has drifted from `Cargo.toml` — which
+  a version bump does every time — fails in the pull request rather than in the
+  Docker build, which is the only step that used `--locked` and so the only one
+  that noticed.
+- **A version tag is never cut without an image behind it.** `publish` now waits
+  for the image builds as well as the tarballs. Previously they ran in parallel,
+  so v1.0.2 got a GitHub release and no container image at all — and an
+  auto-updater polling releases will happily pin one of those.
+
 ## [1.0.2] - 2026-07-26
 
 ### Fixed
