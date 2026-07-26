@@ -3,6 +3,17 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-07-26
+
+### Fixed
+
+- **`--browser` implies `--graphiql`, which implies `--graphql`.** It previously
+  *required* `--graphiql` and errored without it, which meant spelling out three
+  flags to mean one thing. Asking for a surface now asks for what it needs:
+  opening a browser at the IDE means serving the IDE, which means serving the
+  `/graphql` it talks to. Matches how `caldav-cli` and `fastmail-cli` already
+  behave.
+
 ## [1.0.0] - 2026-07-26
 
 Renamed from `mainlynorfolk-cli` to `mainlynorfolk-mcp`, and reduced to the one
