@@ -3,6 +3,38 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] (2026-07-26)
+
+### Changed
+
+- **The image is a plain `COPY` onto `scratch` — no build stage, no package
+  manager, at all.** CI compiles the static musl binary once in the workflow
+  and this Dockerfile only copies it in; a bare `docker build .` requires
+  `dist/` to already hold the binary, which is intentional — docker builds
+  only ever happen in CI now, so nothing recompiles a binary CI already
+  built. Same binary, no shell, nothing to patch, and it drops from a
+  debian-slim base to roughly 20MB.
+- **The CA bundle and cache directory both come from `gcr.io/distroless/static`
+  rather than from any local build step**, so there's nothing to build to get
+  them. `rustls-platform-verifier` needs a real system trust store on Linux —
+  it does **not** fall back to the webpki roots compiled into the binary —
+  confirmed by running the static binary on bare `scratch` with no cert file:
+  it panics at `Client::new()` with "No CA certificates were loaded from the
+  system" before making a single request.
+- **The disk page cache survives the move to `scratch`.** `scratch` has no
+  shell to `mkdir` a cache directory and no `/etc/passwd` to resolve `HOME`
+  against, which would make `dirs::cache_dir()` return `None` and silently
+  stop caching altogether. `/home/nonroot` from `distroless/static:nonroot` is
+  a real, writable directory, re-owned to this image's uid and mounted as
+  `XDG_CACHE_HOME`, so the cache keeps working exactly as it does today — this
+  matters because mainlynorfolk.info and waterwaysongs.info are
+  hand-maintained volunteer sites with no published rate limit, and losing the
+  cache silently means hammering them on every request.
+- **Builds run on every PR; only `main` pushes publish.** A broken Dockerfile
+  now fails before merge instead of after — the image build, lint, format and
+  test jobs all run per-PR, and only pushing to the registry is gated on
+  `main`.
+
 ## [1.1.0] - 2026-07-26
 
 ### Changed
