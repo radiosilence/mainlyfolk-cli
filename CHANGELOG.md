@@ -3,6 +3,18 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] (2026-07-26)
+
+### Changed
+
+- **Fat LTO with serialized codegen is the slowest possible build configuration.**
+  `lto = true` and `codegen-units = 1` trigger whole-program optimization across
+  the entire dependency tree in a single pass — CI builds measured 329s of pure
+  `cargo build` per target. For an I/O-bound service that gains nothing measurable
+  from aggressive optimization, thin LTO and parallel codegen units deliver the
+  same binary behavior with dramatically faster builds. Switched to `lto = "thin"`
+  and `codegen-units = 16`.
+
 ## [1.1.1] (2026-07-26)
 
 ### Changed

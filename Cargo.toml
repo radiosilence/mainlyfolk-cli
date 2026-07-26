@@ -1,6 +1,6 @@
 [package]
 name = "mainlynorfolk-mcp"
-version = "1.1.1"
+version = "1.1.2"
 edition = "2024"
 description = "MCP server exposing the Mainly Norfolk English folk archive as a GraphQL API"
 repository = "https://github.com/radiosilence/mainlynorfolk-mcp"
@@ -53,5 +53,5 @@ wiremock = "0.6"
 
 [profile.release]
 strip = true
-lto = true
-codegen-units = 1
+lto = "thin"
+codegen-units = 16
