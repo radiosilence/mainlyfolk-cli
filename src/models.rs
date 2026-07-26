@@ -348,54 +348,6 @@ pub struct Page {
     pub source: Source,
 }
 
-/// Uniform JSON envelope for CLI output: `{"success": true, "data": {...}}`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Output<T: Serialize> {
-    pub success: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<T>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-}
-
-impl<T: Serialize> Output<T> {
-    pub fn success(data: T) -> Self {
-        Self {
-            success: true,
-            data: Some(data),
-            error: None,
-            message: None,
-        }
-    }
-
-    pub fn success_msg(message: impl Into<String>) -> Self {
-        Self {
-            success: true,
-            data: None,
-            error: None,
-            message: Some(message.into()),
-        }
-    }
-
-    pub fn error(err: impl Into<String>) -> Self {
-        Self {
-            success: false,
-            data: None,
-            error: Some(err.into()),
-            message: None,
-        }
-    }
-
-    pub fn print(&self) {
-        match serde_json::to_string_pretty(self) {
-            Ok(json) => println!("{json}"),
-            Err(e) => eprintln!("{{\"success\":false,\"error\":\"Serialization failed: {e}\"}}"),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -422,13 +374,5 @@ mod tests {
             ..Default::default()
         };
         assert!(refs.is_empty());
-    }
-
-    #[test]
-    fn output_error_carries_no_data() {
-        let output: Output<()> = Output::error("nope");
-        assert!(!output.success);
-        assert!(output.data.is_none());
-        assert_eq!(output.error.as_deref(), Some("nope"));
     }
 }

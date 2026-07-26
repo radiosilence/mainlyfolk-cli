@@ -13,9 +13,9 @@
 //! concurrency cap does not apply across them; running them serially keeps the
 //! whole suite to one request at a time.
 
-use mainlynorfolk_cli::archive::{Archive, SongQuery, paths};
-use mainlynorfolk_cli::client::Client;
-use mainlynorfolk_cli::models::Source;
+use mainlynorfolk_mcp::archive::{Archive, SongQuery, paths};
+use mainlynorfolk_mcp::client::Client;
+use mainlynorfolk_mcp::models::Source;
 
 fn archive() -> Archive {
     Archive::new(Client::new().expect("client"))

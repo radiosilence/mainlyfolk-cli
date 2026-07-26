@@ -115,9 +115,9 @@ impl ServerHandler for FolkMcp {
     fn get_info(&self) -> ServerInfo {
         // The server is named for the archive it serves; its two tools stay
         // `folk`/`folk_schema`, which is what a caller types.
-        let server_info = Implementation::new("mainlynorfolk-cli", env!("CARGO_PKG_VERSION"))
+        let server_info = Implementation::new("mainlynorfolk-mcp", env!("CARGO_PKG_VERSION"))
             .with_title("Mainly Norfolk Archive MCP Server")
-            .with_website_url("https://github.com/radiosilence/mainlynorfolk-cli");
+            .with_website_url("https://github.com/radiosilence/mainlynorfolk-mcp");
 
         ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
             // Only the fallback for a client asking for a version the SDK

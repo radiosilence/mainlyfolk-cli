@@ -1,15 +1,15 @@
 [package]
-name = "mainlynorfolk-cli"
-version = "0.1.1"
+name = "mainlynorfolk-mcp"
+version = "1.0.0"
 edition = "2024"
-description = "CLI and MCP server for the Mainly Norfolk English folk music archive"
-repository = "https://github.com/radiosilence/mainlynorfolk-cli"
+description = "MCP server exposing the Mainly Norfolk English folk archive as a GraphQL API"
+repository = "https://github.com/radiosilence/mainlynorfolk-mcp"
 license = "MIT"
-keywords = ["cli", "folk", "music", "ballads", "mcp"]
-categories = ["command-line-utilities"]
+keywords = ["mcp", "folk", "music", "ballads", "graphql"]
+categories = ["command-line-utilities", "api-bindings"]
 
 [[bin]]
-name = "folk"
+name = "mainlynorfolk-mcp"
 path = "src/main.rs"
 
 [dependencies]

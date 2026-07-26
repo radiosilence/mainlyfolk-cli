@@ -31,9 +31,9 @@ use crate::models::Source;
 /// maintainer seeing it in their logs can find out what it is and complain to
 /// somebody. Anonymous scrapers are how sites end up blocking whole ranges.
 pub const USER_AGENT: &str = concat!(
-    "mainlynorfolk-cli/",
+    "mainlynorfolk-mcp/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/radiosilence/mainlynorfolk-cli)"
+    " (+https://github.com/radiosilence/mainlynorfolk-mcp)"
 );
 
 /// Simultaneous in-flight requests, across every source.
