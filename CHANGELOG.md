@@ -3,6 +3,34 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The image is static musl on `scratch`, not `debian-slim`.** Same binary,
+  no shell, no package manager, nothing to patch — and it drops from a
+  debian-slim base to roughly 20MB. The CA bundle still ships in the image
+  (`rustls-platform-verifier` reads the system trust store to talk to
+  mainlynorfolk.info and waterwaysongs.info over TLS), copied out of the
+  builder stage rather than pinned separately.
+- **The image no longer recompiles the binary CI already built.** `BIN_SOURCE`
+  picks between compiling from source (a plain `docker build .`) and copying
+  a prebuilt musl binary out of `dist/` (what CI does, reusing the binary the
+  release matrix already produced). The build stage still runs either way, to
+  supply the CA bundle, but no longer duplicates a compile that already
+  happened.
+- **Builds run on every PR; only `main` pushes publish.** A broken Dockerfile
+  now fails before merge instead of after — the image build, lint, format and
+  test jobs all run per-PR, and only pushing to the registry is gated on
+  `main`.
+- **The disk page cache survives the move to `scratch`.** `scratch` has no
+  `/etc/passwd` and no `HOME`, which would make `dirs::cache_dir()` return
+  `None` and silently stop caching altogether. `HOME` and `XDG_CACHE_HOME` are
+  set explicitly and the cache directory is seeded and owned by the
+  non-root uid, so the cache keeps working exactly as it does today — this
+  matters because mainlynorfolk.info is a hand-maintained volunteer site with
+  no rate limit, and losing the cache means hammering it on every request.
+
 ## [1.1.0] - 2026-07-26
 
 ### Changed
