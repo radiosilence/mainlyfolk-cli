@@ -1,82 +1,30 @@
-# mainlynorfolk-cli
+# mainlynorfolk-mcp
 
-A CLI and MCP server over [Mainly Norfolk](https://www.mainlynorfolk.info/folk/),
+An MCP server over [Mainly Norfolk](https://www.mainlynorfolk.info/folk/),
 Reinhard Zierke's encyclopaedic archive of English folk music, plus
 [Waterways Songs](https://www.waterwaysongs.info) for canal and inland-waterways
-songs. Both sites are hand-maintained HTML with no API; this gives them a
-scriptable JSON-output CLI and a [Model Context Protocol](https://modelcontextprotocol.io)
-server exposing one composable GraphQL interface instead of a tool per
-operation.
+songs. Neither site has an API; this gives them one composable GraphQL schema
+and serves it to a model over MCP.
+
+Two tools, not one per operation: `folk_schema` returns the SDL, `folk` runs a
+query. The schema is a few thousand tokens, so it stays behind a tool call — a
+session that never mentions folk music pays almost nothing for having this
+connected.
 
 ## Install
 
 ```bash
-cargo install mainlynorfolk-cli
+cargo install mainlynorfolk-mcp
 ```
 
-Or grab a binary from [releases](https://github.com/radiosilence/mainlynorfolk-cli/releases),
-or pull the image:
+Or pull the image, or take a binary from
+[releases](https://github.com/radiosilence/mainlynorfolk-mcp/releases):
 
 ```bash
-docker pull ghcr.io/radiosilence/mainlynorfolk-cli
+docker pull ghcr.io/radiosilence/mainlynorfolk-mcp
 ```
 
-## CLI usage
-
-The binary is `folk`. All output is JSON.
-
-```bash
-folk search "reynardine"                    # title search
-folk search --scheme roud --number 12       # Roud 12 — The Elfin Knight / Scarborough Fair
-folk song /martin.carthy/songs/reynardine.html
-folk song /martin.carthy/songs/reynardine.html --lyrics
-
-folk child 84                               # Child 84 — Barbara Allen
-folk child 1-50                             # a range
-folk laws P15                               # Laws P15 — Reynardine / The Mountains High
-
-folk artist "Martin Carthy"                 # index page + chronological discography
-folk records "carthy"                       # search releases by artist or album
-folk album /martin.carthy/records/martincarthy.html
-
-folk labels                                 # every label the archive has a discography for
-folk books                                  # the bibliography — books the archive's song pages cite
-folk books "Ballads and Songs"              # filter by section, author or title
-folk waterways "hard working boater"        # canal songs from waterwaysongs.info
-
-folk page /folk/latestchanges.html          # any archive page as plain text
-folk latest                                 # what the archive changed recently
-
-folk cache                                  # report cache stats
-folk cache --clear                          # empty the on-disk page cache
-folk completions zsh
-```
-
-Every command that reads the archive also accepts `--no-cache`, global, to
-bypass the disk cache for that run.
-
-`child` browses what the archive has, not the full canon: Francis James
-Child catalogued 305 ballads, and the archive currently has pages for 209 of
-them.
-
-## MCP server
-
-```bash
-folk mcp                             # stdio, for Claude Desktop / Claude Code
-folk mcp --http                      # streamable HTTP MCP at /mcp
-folk mcp --http 0.0.0.0:8080         # explicit address
-folk mcp --graphiql --browser        # GraphiQL IDE, opened for you, no MCP listener needed
-```
-
-`--http`, `--graphql` and `--graphiql` are independent surfaces that happen to
-share a port: `--http` puts the MCP streamable-HTTP transport on `/mcp`,
-`--graphql` serves plain GraphQL-over-HTTP at `/graphql` for anything that
-isn't speaking MCP, and `--graphiql` adds the browsable IDE at `/`. Asking for
-any of them binds a listener — there's nowhere to mount an HTTP route over
-stdio.
-
-The schema is introspectable, so point `--graphiql` at it rather than reading
-a hand-written field list here; one goes stale, the other doesn't.
+## Connect it
 
 Claude Desktop, in `claude_desktop_config.json`:
 
@@ -84,55 +32,106 @@ Claude Desktop, in `claude_desktop_config.json`:
 {
   "mcpServers": {
     "folk": {
-      "command": "folk",
-      "args": ["mcp"]
+      "command": "mainlynorfolk-mcp"
     }
   }
 }
 ```
 
-Or with Claude Code:
+Claude Code:
 
 ```bash
-claude mcp add --scope user folk -- folk mcp
+claude mcp add --scope user folk -- mainlynorfolk-mcp
 ```
+
+With no arguments it speaks MCP over stdio, which is what both of those launch.
+
+## The graph
+
+The schema is introspectable — point `--graphiql` at it rather than reading a
+field list here, because one of those goes stale:
+
+```bash
+mainlynorfolk-mcp --graphiql --browser
+```
+
+What makes it worth querying rather than scraping is that the edges are real.
+A song knows the artists who claim it, the releases it appears on, and the books
+that cite it; a release knows its tracks, and a track knows its song. The graph
+has cycles by design, and depth is the point — `artist → discography → album →
+tracks → song → recordings → album` is seven levels before it repeats.
+
+```graphql
+{
+  song(path: "/lloyd/songs/sailorcutdowninhisprime.html") {
+    title
+    refs { roud child masterTitle }
+    lyrics { performer text }
+    sameRoud(first: 5) {          # other pages sharing this Roud number
+      nodes { title }
+    }
+  }
+}
+```
+
+`sameRoud` is the edge worth knowing about. Roud numbers are the archive's own
+"these are the same song" key, so it reassembles a family: Roud 2 gathers
+*Young Sailor Cut Down in His Prime*, *Bright Shiny Morning*, *When I Was on
+Horseback* and *Young Girl Cut Down in Her Prime* — the ballad that became
+*Streets of Laredo*. It costs one search rather than a crawl, and it recurses
+through `SongSummary.song`.
+
+Reads are Relay connections: `first`/`after`, and a `totalCount` that is free
+because these lists arrive whole from one request. Cursors are paths, so a stale
+one tells you to restart rather than quietly returning a different page.
+
+Searching uses the archive's own `search.php` endpoints in preference to
+fetching an index: the full song index is 670KB of HTML, and the same query
+server-side is 10KB. Reference searches accept Roud, Child, Laws, Greig-Duncan
+and Sam Henry numbers.
+
+## Serving it elsewhere
+
+```bash
+mainlynorfolk-mcp --http                  # MCP over streamable HTTP at /mcp
+mainlynorfolk-mcp --http 0.0.0.0:8080     # explicit address
+mainlynorfolk-mcp --graphql               # plain GraphQL-over-HTTP at /graphql
+mainlynorfolk-mcp --graphiql --browser    # the IDE, opened for you
+```
+
+`--http`, `--graphql` and `--graphiql` are independent surfaces that happen to
+share a port. `--http` puts MCP's streamable-HTTP transport on `/mcp`;
+`--graphql` serves anything speaking GraphQL directly rather than through MCP's
+JSON-RPC envelope; `--graphiql` adds the IDE at `/`. Asking for any of them
+binds a listener, because there is nowhere to mount an HTTP route over stdio.
+
+Introspection is answered from the schema without touching the archive, so the
+IDE's docs and autocomplete work before a single page is fetched.
 
 ## Caching and politeness
 
-mainlynorfolk.info is one person's decades-long labour, hand-maintained, with
-no API and no published rate limit, and its content changes a few times a
-month — so nearly every read past the first should never leave the process.
-Four layers enforce that, cheapest first:
+mainlynorfolk.info is one person's decades-long labour, hand-maintained, with no
+API and no published rate limit, and its content changes a few times a month —
+so nearly every read past the first should never leave the process. Four layers
+enforce that, cheapest first:
 
-- **An in-memory cache**, bounded at 512 pages. This is what makes a deep
-  GraphQL query that revisits the same hub pages — the Child index, an
-  artist's discography, the album every track on it points back to — free
-  after the first visit, rather than a disk read per field.
-- **A disk cache**, under the platform cache directory (`~/.cache/mainlynorfolk`
-  on Linux, `~/Library/Caches/mainlynorfolk` on macOS), keyed by URL and
-  surviving process exit — a session that looks at the Child index ten times
-  over a week fetches it once, and a long-running MCP server keeps that
-  benefit across restarts.
-- **Conditional revalidation**, once the disk entry passes 24 hours old: the
-  request carries `If-None-Match`/`If-Modified-Since`, and the archive answers
-  `304` with no body — the cheapest thing it can be asked to do.
-- **A real fetch**, capped at 4 concurrent requests across everything. A
-  single GraphQL query can fan out into dozens of page loads (an artist's
-  whole discography, a song's every recording); this is what stops that from
-  hitting a small static host all at once.
+- **An in-memory cache**, bounded at 512 pages. A deep query revisits the same
+  hub pages constantly — the Child index, an artist's discography, the album
+  every track points back to — and this makes the second visit free.
+- **A disk cache** under the platform cache directory (`~/.cache/mainlynorfolk`
+  on Linux, `~/Library/Caches/mainlynorfolk` on macOS), surviving process exit,
+  so a long-running server keeps the benefit across restarts.
+- **Conditional revalidation** once a disk entry passes 24 hours: the request
+  carries `If-None-Match`/`If-Modified-Since` and the archive answers `304` with
+  no body.
+- **A real fetch**, capped at 4 concurrent across everything. A single query can
+  fan out into dozens of page loads; this is what stops that arriving all at
+  once.
 
-Every request also carries a `User-Agent` naming the tool and this repo, so
-an archive maintainer who notices it in their logs can see what it is.
+Every request carries a `User-Agent` naming the tool and this repo. It does not
+pretend to be a browser.
 
-`--no-cache` disables the disk cache only. The in-memory cache holds nothing
-across runs, so it has nothing stale to serve — there is no reason to disable
-it too.
-
-## Credit
-
-This archive exists because Reinhard Zierke has spent decades cataloguing
-English folk song, and [Mainly Norfolk](https://www.mainlynorfolk.info/folk/)
-is the result. This tool is a reader over that work, nothing more.
+`--clear-cache` empties the disk cache.
 
 ## Development
 
@@ -142,16 +141,25 @@ cargo clippy --all-targets -- -D warnings
 cargo fmt --all
 ```
 
-`tests/live_archive.rs` checks the running assumptions against the real
-archives — that `search.php` still answers, that an entry-point page is still
-there. It's `#[ignore]`d and excluded from CI on purpose: these hit a
-volunteer-run site, and scheduled traffic against it would be the opposite of
-the politeness this tool otherwise goes out of its way for. Run it by hand
-when something looks wrong:
+Parsers are pure `&str` → model functions tested against saved fixtures in
+`tests/fixtures/`, so the suite needs no network.
+
+`tests/live_archive.rs` checks the running assumptions against the real sites —
+that `search.php` still answers, that the entry points are still there. It is
+`#[ignore]`d and excluded from CI on purpose: these hit a volunteer-run site,
+and scheduled traffic against it would be the opposite of the politeness this
+tool otherwise goes out of its way for. Run it by hand when something looks
+wrong:
 
 ```bash
 cargo test --test live_archive -- --ignored --test-threads=1
 ```
+
+## Credit
+
+This archive exists because Reinhard Zierke has spent decades cataloguing
+English folk song, and [Mainly Norfolk](https://www.mainlynorfolk.info/folk/) is
+the result. This is a reader over that work, nothing more.
 
 ## License
 

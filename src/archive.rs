@@ -1,8 +1,10 @@
-//! Typed accessors over the archives: fetch a page, parse it, hand back a model.
+//! What an API call is: the archive's own search endpoints, and the paths
+//! everything else lives at.
 //!
-//! The one layer that pairs [`crate::client`] with [`crate::parse`]. Both the
-//! CLI and the GraphQL resolvers go through here, so there is one answer to
-//! "what is a song page" rather than two that drift.
+//! Page reads don't come through here — a DataLoader fetches the page and hands
+//! it to [`crate::parse`] itself, so there is exactly one place a page can be
+//! fetched from and the request-scoped caching is total. Searching is different:
+//! it is a POST with a form body rather than a path, so it gets a function.
 //!
 //! # Searching beats scraping
 //!
@@ -11,14 +13,12 @@
 //! index is 670KB of HTML listing 5,391 songs; the same query through
 //! `search.php` is a 10KB response the server has already filtered. Anything
 //! answerable by search goes through [`Archive::search_songs`] or
-//! [`Archive::search_records`]; the whole-index parsers exist for browsing the
+//! [`Archive::search_records`]; the whole-index reads exist for browsing the
 //! Child and Laws canons, where the entire list *is* the answer.
 
 use crate::client::Client;
 use crate::error::{Error, Result};
-use crate::models::{
-    Album, Artist, Book, Label, Page, Song, SongSummary, Source, Track, WaterwaysSong,
-};
+use crate::models::{Album, SongSummary, Source};
 use crate::parse;
 
 /// Paths that are structural rather than content — the entry points every
@@ -120,14 +120,6 @@ impl Archive {
         &self.client
     }
 
-    // ============ Songs ============
-
-    /// One song page in full.
-    pub async fn song(&self, path: &str) -> Result<Song> {
-        let html = self.client.get(Source::MainlyNorfolk, path).await?;
-        parse::song(&html, path)
-    }
-
     /// Search songs through the archive's own endpoint.
     pub async fn search_songs(&self, query: &SongQuery) -> Result<Vec<SongSummary>> {
         if query.is_empty() {
@@ -142,50 +134,6 @@ impl Archive {
             .post_form(Source::MainlyNorfolk, paths::SONG_SEARCH, &form)
             .await?;
         Ok(parse::song_list(&html, paths::SONG_SEARCH))
-    }
-
-    /// Every Child ballad the archive covers.
-    pub async fn child_index(&self) -> Result<Vec<SongSummary>> {
-        let html = self
-            .client
-            .get(Source::MainlyNorfolk, paths::CHILD_INDEX)
-            .await?;
-        Ok(parse::song_list(&html, paths::CHILD_INDEX))
-    }
-
-    /// Every Laws ballad the archive covers.
-    pub async fn laws_index(&self) -> Result<Vec<SongSummary>> {
-        let html = self
-            .client
-            .get(Source::MainlyNorfolk, paths::LAWS_INDEX)
-            .await?;
-        Ok(parse::song_list(&html, paths::LAWS_INDEX))
-    }
-
-    /// The full song index — every song and tune on the archive.
-    ///
-    /// 670KB and several thousand entries. Prefer [`Self::search_songs`] for
-    /// anything a query can answer.
-    pub async fn song_index(&self) -> Result<Vec<SongSummary>> {
-        let html = self
-            .client
-            .get(Source::MainlyNorfolk, paths::SONG_INDEX)
-            .await?;
-        Ok(parse::song_list(&html, paths::SONG_INDEX))
-    }
-
-    // ============ Artists, records, labels ============
-
-    /// An artist's index page.
-    pub async fn artist(&self, path: &str) -> Result<Artist> {
-        let html = self.client.get(Source::MainlyNorfolk, path).await?;
-        parse::artist(&html, path)
-    }
-
-    /// An artist's chronological discography.
-    pub async fn discography(&self, path: &str) -> Result<Vec<Album>> {
-        let html = self.client.get(Source::MainlyNorfolk, path).await?;
-        Ok(parse::discography(&html, path))
     }
 
     /// Search releases by artist or album name, through the archive's endpoint.
@@ -205,62 +153,6 @@ impl Archive {
             )
             .await?;
         Ok(parse::records_search(&html, paths::RECORD_SEARCH))
-    }
-
-    /// One release and its tracks. `path` may carry a `#fragment` selecting one
-    /// release from a page documenting several.
-    pub async fn album(&self, path: &str) -> Result<(Album, Vec<Track>)> {
-        let html = self.client.get(Source::MainlyNorfolk, path).await?;
-        parse::album(&html, path)
-    }
-
-    /// Every label discography the archive publishes, read from its navigation.
-    pub async fn labels(&self) -> Result<Vec<Label>> {
-        let html = self.client.get(Source::MainlyNorfolk, paths::FOLK).await?;
-        Ok(parse::labels(&html))
-    }
-
-    /// A label's discography.
-    pub async fn label_albums(&self, path: &str) -> Result<Vec<Album>> {
-        let html = self.client.get(Source::MainlyNorfolk, path).await?;
-        Ok(parse::discography(&html, path))
-    }
-
-    // ============ Bibliography ============
-
-    /// Every book in the archive's bibliography.
-    ///
-    /// One page, so this is a single fetch — which is why song-page citations
-    /// are resolved by looking them up here rather than by following each
-    /// citation's own link.
-    pub async fn books(&self) -> Result<Vec<Book>> {
-        let html = self.client.get(Source::MainlyNorfolk, paths::BOOKS).await?;
-        Ok(parse::books(&html, paths::BOOKS))
-    }
-
-    // ============ Waterways ============
-
-    /// Every canal song in the waterwaysongs.info menu. Titles and paths only.
-    pub async fn waterways_index(&self) -> Result<Vec<WaterwaysSong>> {
-        let html = self
-            .client
-            .get(Source::Waterways, paths::WATERWAYS_MENU)
-            .await?;
-        Ok(parse::waterways_index(&html))
-    }
-
-    /// One canal song page in full.
-    pub async fn waterways_song(&self, path: &str) -> Result<WaterwaysSong> {
-        let html = self.client.get(Source::Waterways, path).await?;
-        parse::waterways_song(&html, path)
-    }
-
-    // ============ Anything else ============
-
-    /// Any page on either archive, as text and links.
-    pub async fn page(&self, source: Source, path: &str) -> Result<Page> {
-        let html = self.client.get(source, path).await?;
-        parse::page(&html, path, source)
     }
 }
 

@@ -1,183 +1,54 @@
-use clap::{Args, CommandFactory, Parser, Subcommand};
+use clap::{CommandFactory, Parser};
 use clap_complete::{Shell, generate};
-use mainlynorfolk_cli::archive::RefKey;
-use mainlynorfolk_cli::models::Output;
-use mainlynorfolk_cli::{commands, mcp};
+use mainlynorfolk_mcp::{client::Client, mcp};
 use std::io;
 use tracing_subscriber::EnvFilter;
 
-/// Flags every command that reads the archive accepts.
-#[derive(Args, Debug, Clone, Default)]
-struct CacheOpts {
-    /// Bypass the on-disk page cache for this run.
-    #[arg(long, global = true)]
-    no_cache: bool,
-}
-
-/// The reference schemes the archive's own search indexes.
-#[derive(clap::ValueEnum, Debug, Clone, Copy)]
-enum RefScheme {
-    /// Steve Roud's Folk Song Index
-    Roud,
-    /// Francis James Child's ballad numbers
-    Child,
-    /// G. Malcolm Laws' American balladry codes
-    Laws,
-    /// The Greig-Duncan Folk Song Collection
-    Gd,
-    /// Sam Henry's Songs of the People
-    Henry,
-}
-
-impl From<RefScheme> for RefKey {
-    fn from(s: RefScheme) -> Self {
-        match s {
-            RefScheme::Roud => RefKey::Roud,
-            RefScheme::Child => RefKey::Child,
-            RefScheme::Laws => RefKey::Laws,
-            RefScheme::Gd => RefKey::GreigDuncan,
-            RefScheme::Henry => RefKey::Henry,
-        }
-    }
-}
-
+/// MCP server for the Mainly Norfolk English folk archive.
+///
+/// With no flags it speaks MCP over stdio, which is what a desktop client
+/// launches. The flags exist for the two other ways in: a hosted deployment
+/// (`--http`), and a human wanting to look at the schema (`--graphiql`).
 #[derive(Parser)]
-#[command(name = "folk")]
-#[command(version, about = "The Mainly Norfolk English folk archive, from the command line", long_about = None)]
+#[command(name = "mainlynorfolk-mcp")]
+#[command(version, about, long_about = None)]
 struct Cli {
-    #[command(flatten)]
-    cache: CacheOpts,
+    /// Serve MCP over streamable HTTP at /mcp instead of stdio, on this
+    /// address (default 127.0.0.1:8080).
+    #[arg(
+        long,
+        value_name = "ADDR",
+        num_args = 0..=1,
+        default_missing_value = mcp::DEFAULT_HTTP_ADDR,
+    )]
+    http: Option<String>,
 
-    #[command(subcommand)]
-    command: Commands,
-}
+    /// Serve plain GraphQL-over-HTTP at /graphql, for anything speaking
+    /// GraphQL directly rather than through MCP's JSON-RPC envelope.
+    #[arg(long)]
+    graphql: bool,
 
-#[derive(Subcommand)]
-enum Commands {
-    /// Search songs by title, author, or reference number
-    Search {
-        /// Title or part of one. A trailing `*` is a wildcard.
-        query: Option<String>,
+    /// Serve the GraphiQL IDE at /, and the /graphql it talks to.
+    #[arg(long)]
+    graphiql: bool,
 
-        /// Narrow to songs associated with this artist
-        #[arg(short, long)]
-        author: Option<String>,
+    /// Open the GraphiQL IDE in your browser once listening.
+    #[arg(long, requires = "graphiql")]
+    browser: bool,
 
-        /// Reference scheme for --number
-        #[arg(long, value_enum, requires = "number")]
-        scheme: Option<RefScheme>,
+    /// Empty the on-disk page cache and exit.
+    #[arg(long)]
+    clear_cache: bool,
 
-        /// Reference number, e.g. 12 for Roud 12, P15 for Laws P15
-        #[arg(short, long)]
-        number: Option<String>,
-    },
-
-    /// Read a song page — titles, references, lyrics, notes, recordings
-    Song {
-        /// Song page path, e.g. /martin.carthy/songs/theelfinknight.html
-        path: String,
-
-        /// Print only the lyrics
-        #[arg(long)]
-        lyrics: bool,
-    },
-
-    /// Browse the Child Ballads the archive covers — 209 of Child's 305
-    Child {
-        /// A number (`84`), a range (`1-50`), or text to match
-        filter: Option<String>,
-    },
-
-    /// Browse the Laws Index — American ballads of British origin
-    Laws {
-        /// A code (`P15`), a letter prefix (`P`), or text to match
-        filter: Option<String>,
-    },
-
-    /// Look up an artist and their chronological discography
-    Artist {
-        /// Artist name or path, e.g. "Martin Carthy" or /martin.carthy/
-        name: String,
-    },
-
-    /// Search releases by artist or album name
-    Records {
-        /// Artist or album name, or part of one
-        query: String,
-    },
-
-    /// Read an album page and its tracklist
-    Album {
-        /// Album page path, fragment included where a page holds several
-        path: String,
-    },
-
-    /// List the record labels with a discography on the archive
-    Labels,
-
-    /// Browse the bibliography — the books the archive's song pages cite
-    Books {
-        /// Filter by section, author or title
-        filter: Option<String>,
-    },
-
-    /// Canal and inland-waterways songs, from waterwaysongs.info
-    Waterways {
-        /// Title or part of one. Omit to list everything.
-        query: Option<String>,
-    },
-
-    /// Read any archive page as plain text
-    Page {
-        /// Path or full URL on either archive
-        path: String,
-    },
-
-    /// Show what the archive changed recently
-    Latest,
-
-    /// Inspect or empty the on-disk page cache
-    Cache {
-        /// Delete every cached page
-        #[arg(long)]
-        clear: bool,
-    },
-
-    /// Generate shell completions
-    Completions {
-        /// Shell to generate completions for
-        #[arg(value_enum)]
-        shell: Shell,
-    },
-
-    /// Run as MCP (Model Context Protocol) server for Claude integration
-    Mcp {
-        /// Serve MCP over streamable HTTP at /mcp instead of stdio, on this
-        /// address (default 127.0.0.1:8080).
-        #[arg(
-            long,
-            value_name = "ADDR",
-            num_args = 0..=1,
-            default_missing_value = mcp::DEFAULT_HTTP_ADDR,
-        )]
-        http: Option<String>,
-
-        /// Serve plain GraphQL-over-HTTP at /graphql
-        #[arg(long)]
-        graphql: bool,
-
-        /// Serve the GraphiQL IDE at /, and the /graphql it talks to
-        #[arg(long)]
-        graphiql: bool,
-
-        /// Open the GraphiQL IDE in your browser once listening
-        #[arg(long, requires = "graphiql")]
-        browser: bool,
-    },
+    /// Generate shell completions and exit.
+    #[arg(long, value_name = "SHELL", value_enum)]
+    completions: Option<Shell>,
 }
 
 #[tokio::main]
 async fn main() {
+    // stderr, always: stdout is the MCP transport over stdio, and a stray log
+    // line there is a protocol error rather than a cosmetic one.
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .with_target(false)
@@ -185,88 +56,55 @@ async fn main() {
         .init();
 
     let cli = Cli::parse();
-    let no_cache = cli.cache.no_cache;
 
-    let result = match cli.command {
-        Commands::Search {
-            query,
-            author,
-            scheme,
-            number,
-        } => {
-            commands::search(
-                no_cache,
-                query.as_deref(),
-                author.as_deref(),
-                scheme.map(Into::into),
-                number.as_deref(),
+    if let Some(shell) = cli.completions {
+        generate(
+            shell,
+            &mut Cli::command(),
+            "mainlynorfolk-mcp",
+            &mut io::stdout(),
+        );
+        return;
+    }
+
+    if cli.clear_cache {
+        match Client::new().and_then(|c| c.clear_cache()) {
+            Ok(removed) => eprintln!("Cleared {removed} cached pages"),
+            Err(e) => {
+                eprintln!("Could not clear the cache: {e}");
+                std::process::exit(1);
+            }
+        }
+        return;
+    }
+
+    // `--http` is MCP's own transport; `--graphql`/`--graphiql` are separate
+    // surfaces that happen to need a listener too. Asking for any of them binds
+    // one — there is nowhere to mount an HTTP route over stdio — and only
+    // `--http` puts MCP on it.
+    let addr = cli
+        .http
+        .clone()
+        .or_else(|| (cli.graphql || cli.graphiql).then(|| mcp::DEFAULT_HTTP_ADDR.to_string()));
+
+    let served = match addr {
+        Some(addr) => {
+            mcp::run_http_server(
+                &addr,
+                mcp::HttpSurfaces {
+                    mcp: cli.http.is_some(),
+                    graphql: cli.graphql,
+                    graphiql: cli.graphiql,
+                    browser: cli.browser,
+                },
             )
             .await
         }
-
-        Commands::Song { path, lyrics } => commands::song(no_cache, &path, lyrics).await,
-
-        Commands::Child { filter } => commands::child(no_cache, filter.as_deref()).await,
-
-        Commands::Laws { filter } => commands::laws(no_cache, filter.as_deref()).await,
-
-        Commands::Artist { name } => commands::artist(no_cache, &name).await,
-
-        Commands::Records { query } => commands::records(no_cache, &query).await,
-
-        Commands::Album { path } => commands::album(no_cache, &path).await,
-
-        Commands::Labels => commands::labels(no_cache).await,
-
-        Commands::Books { filter } => commands::books(no_cache, filter.as_deref()).await,
-
-        Commands::Waterways { query } => commands::waterways(no_cache, query.as_deref()).await,
-
-        Commands::Page { path } => commands::page(no_cache, &path).await,
-
-        Commands::Latest => commands::latest(no_cache).await,
-
-        Commands::Cache { clear } => commands::cache(clear),
-
-        Commands::Completions { shell } => {
-            generate(shell, &mut Cli::command(), "folk", &mut io::stdout());
-            return;
-        }
-
-        Commands::Mcp {
-            http,
-            graphql,
-            graphiql,
-            browser,
-        } => {
-            // `--http` is MCP's own transport; `--graphql`/`--graphiql` are
-            // separate surfaces that happen to need a listener too. Asking for
-            // any of them binds one — there is nowhere to mount an HTTP route
-            // over stdio — and only `--http` puts MCP on it.
-            let addr = http
-                .clone()
-                .or_else(|| (graphql || graphiql).then(|| mcp::DEFAULT_HTTP_ADDR.to_string()));
-            let served = match addr {
-                Some(addr) => {
-                    mcp::run_http_server(
-                        &addr,
-                        mcp::HttpSurfaces {
-                            mcp: http.is_some(),
-                            graphql,
-                            graphiql,
-                            browser,
-                        },
-                    )
-                    .await
-                }
-                None => mcp::run_server().await,
-            };
-            served.map_err(|e| mainlynorfolk_cli::error::Error::Cache(e.to_string()))
-        }
+        None => mcp::run_server().await,
     };
 
-    if let Err(e) = result {
-        Output::<()>::error(e.to_string()).print();
+    if let Err(e) = served {
+        eprintln!("{e}");
         std::process::exit(1);
     }
 }
