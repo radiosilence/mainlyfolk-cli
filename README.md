@@ -14,7 +14,7 @@ connected.
 ## Install
 
 ```bash
-cargo install mainlynorfolk-mcp
+cargo install mainlynorfolk-mcp   # installs the `folk` binary
 ```
 
 Or pull the image, or take a binary from
@@ -32,7 +32,7 @@ Claude Desktop, in `claude_desktop_config.json`:
 {
   "mcpServers": {
     "folk": {
-      "command": "mainlynorfolk-mcp"
+      "command": "folk"
     }
   }
 }
@@ -41,7 +41,7 @@ Claude Desktop, in `claude_desktop_config.json`:
 Claude Code:
 
 ```bash
-claude mcp add --scope user folk -- mainlynorfolk-mcp
+claude mcp add --scope user folk -- folk
 ```
 
 With no arguments it speaks MCP over stdio, which is what both of those launch.
@@ -52,7 +52,7 @@ The schema is introspectable — point `--graphiql` at it rather than reading a
 field list here, because one of those goes stale:
 
 ```bash
-mainlynorfolk-mcp --graphiql --browser
+folk --graphiql --browser
 ```
 
 What makes it worth querying rather than scraping is that the edges are real.
@@ -93,10 +93,10 @@ and Sam Henry numbers.
 ## Serving it elsewhere
 
 ```bash
-mainlynorfolk-mcp --http                  # MCP over streamable HTTP at /mcp
-mainlynorfolk-mcp --http 0.0.0.0:8080     # explicit address
-mainlynorfolk-mcp --graphql               # plain GraphQL-over-HTTP at /graphql
-mainlynorfolk-mcp --graphiql --browser    # the IDE, opened for you
+folk --http                  # MCP over streamable HTTP at /mcp
+folk --http 0.0.0.0:8080     # explicit address
+folk --graphql               # plain GraphQL-over-HTTP at /graphql
+folk --graphiql --browser    # the IDE, opened for you
 ```
 
 `--http`, `--graphql` and `--graphiql` are independent surfaces that happen to
@@ -131,7 +131,8 @@ enforce that, cheapest first:
 Every request carries a `User-Agent` naming the tool and this repo. It does not
 pretend to be a browser.
 
-`--clear-cache` empties the disk cache.
+`folk clear-cache` empties the disk cache; `folk completions <shell>` writes
+shell completions.
 
 ## Development
 

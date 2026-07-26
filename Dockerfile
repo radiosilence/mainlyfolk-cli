@@ -15,11 +15,11 @@ RUN cargo build --release --locked
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=build /app/target/release/mainlynorfolk-mcp /usr/local/bin/mainlynorfolk-mcp
+COPY --from=build /app/target/release/folk /usr/local/bin/folk
 EXPOSE 8080
 RUN useradd --system --uid 10001 --create-home app \
     && mkdir -p /home/app/.cache && chown app:app /home/app/.cache
 ENV XDG_CACHE_HOME=/home/app/.cache
 USER app
-ENTRYPOINT ["mainlynorfolk-mcp"]
+ENTRYPOINT ["folk"]
 CMD ["--http", "0.0.0.0:8080"]

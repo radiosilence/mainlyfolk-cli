@@ -1,4 +1,4 @@
-use clap::{CommandFactory, Parser};
+use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{Shell, generate};
 use mainlynorfolk_mcp::{client::Client, mcp};
 use std::io;
@@ -6,13 +6,17 @@ use tracing_subscriber::EnvFilter;
 
 /// MCP server for the Mainly Norfolk English folk archive.
 ///
-/// With no flags it speaks MCP over stdio, which is what a desktop client
-/// launches. The flags exist for the two other ways in: a hosted deployment
+/// With no arguments it speaks MCP over stdio, which is what a desktop client
+/// launches. The flags are the two other ways in: a hosted deployment
 /// (`--http`), and a human wanting to look at the schema (`--graphiql`).
 #[derive(Parser)]
-#[command(name = "mainlynorfolk-mcp")]
+#[command(name = "folk")]
 #[command(version, about, long_about = None)]
 struct Cli {
+    /// Housekeeping that runs instead of the server.
+    #[command(subcommand)]
+    command: Option<Command>,
+
     /// Serve MCP over streamable HTTP at /mcp instead of stdio, on this
     /// address (default 127.0.0.1:8080).
     #[arg(
@@ -37,14 +41,24 @@ struct Cli {
     /// --graphiql).
     #[arg(long)]
     browser: bool,
+}
 
-    /// Empty the on-disk page cache and exit.
-    #[arg(long)]
-    clear_cache: bool,
+/// The things that are not "run the server".
+///
+/// Subcommands rather than flags, because each one does something else entirely
+/// and exits — and because it is what the sibling tools already use, so
+/// `folk completions zsh` is what a hand reaches for.
+#[derive(Subcommand)]
+enum Command {
+    /// Generate shell completions.
+    Completions {
+        /// Shell to generate completions for.
+        #[arg(value_enum)]
+        shell: Shell,
+    },
 
-    /// Generate shell completions and exit.
-    #[arg(long, value_name = "SHELL", value_enum)]
-    completions: Option<Shell>,
+    /// Empty the on-disk page cache.
+    ClearCache,
 }
 
 /// Which surfaces the flags ask for, and where to bind them.
@@ -90,25 +104,22 @@ async fn main() {
 
     let cli = Cli::parse();
 
-    if let Some(shell) = cli.completions {
-        generate(
-            shell,
-            &mut Cli::command(),
-            "mainlynorfolk-mcp",
-            &mut io::stdout(),
-        );
-        return;
-    }
-
-    if cli.clear_cache {
-        match Client::new().and_then(|c| c.clear_cache()) {
-            Ok(removed) => eprintln!("Cleared {removed} cached pages"),
-            Err(e) => {
-                eprintln!("Could not clear the cache: {e}");
-                std::process::exit(1);
-            }
+    match cli.command {
+        Some(Command::Completions { shell }) => {
+            generate(shell, &mut Cli::command(), "folk", &mut io::stdout());
+            return;
         }
-        return;
+        Some(Command::ClearCache) => {
+            match Client::new().and_then(|c| c.clear_cache()) {
+                Ok(removed) => eprintln!("Cleared {removed} cached pages"),
+                Err(e) => {
+                    eprintln!("Could not clear the cache: {e}");
+                    std::process::exit(1);
+                }
+            }
+            return;
+        }
+        None => {}
     }
 
     let (addr, surfaces) = resolve(&cli);
@@ -130,7 +141,7 @@ mod tests {
     use clap::Parser;
 
     fn parse(args: &[&str]) -> (Option<String>, mcp::HttpSurfaces) {
-        let mut argv = vec!["mainlynorfolk-mcp"];
+        let mut argv = vec!["folk"];
         argv.extend_from_slice(args);
         resolve(&Cli::parse_from(argv))
     }
