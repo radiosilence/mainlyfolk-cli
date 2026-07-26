@@ -1,6 +1,6 @@
 [package]
 name = "mainlynorfolk-mcp"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "MCP server exposing the Mainly Norfolk English folk archive as a GraphQL API"
 repository = "https://github.com/radiosilence/mainlynorfolk-mcp"
