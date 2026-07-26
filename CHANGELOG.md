@@ -3,7 +3,7 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2026-07-26
+## [1.0.2] - 2026-07-26
 
 ### Fixed
 
@@ -13,6 +13,18 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   opening a browser at the IDE means serving the IDE, which means serving the
   `/graphql` it talks to. Matches how `caldav-cli` and `fastmail-cli` already
   behave.
+
+## [1.0.1] - 2026-07-26
+
+### Fixed
+
+- **No image was ever published under the new name.** 1.0.0 was released while
+  the repository was still `mainlynorfolk-cli`, so its images went to the
+  `mainlynorfolk-cli` package and the rename that followed left
+  `ghcr.io/radiosilence/mainlynorfolk-mcp:v1.0.0` referring to something that
+  does not exist — a GHCR package does not follow its repository. Anything
+  pinned to the correct-looking name could not pull it. This release exists to
+  publish under the right one; the code is unchanged.
 
 ## [1.0.0] - 2026-07-26
 
