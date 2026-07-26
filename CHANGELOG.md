@@ -3,33 +3,37 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.1] (2026-07-26)
 
 ### Changed
 
-- **The image is static musl on `scratch`, not `debian-slim`.** Same binary,
-  no shell, no package manager, nothing to patch — and it drops from a
-  debian-slim base to roughly 20MB. The CA bundle still ships in the image
-  (`rustls-platform-verifier` reads the system trust store to talk to
-  mainlynorfolk.info and waterwaysongs.info over TLS), copied out of the
-  builder stage rather than pinned separately.
-- **The image no longer recompiles the binary CI already built.** `BIN_SOURCE`
-  picks between compiling from source (a plain `docker build .`) and copying
-  a prebuilt musl binary out of `dist/` (what CI does, reusing the binary the
-  release matrix already produced). The build stage still runs either way, to
-  supply the CA bundle, but no longer duplicates a compile that already
-  happened.
+- **The image is a plain `COPY` onto `scratch` — no build stage, no package
+  manager, at all.** CI compiles the static musl binary once in the workflow
+  and this Dockerfile only copies it in; a bare `docker build .` requires
+  `dist/` to already hold the binary, which is intentional — docker builds
+  only ever happen in CI now, so nothing recompiles a binary CI already
+  built. Same binary, no shell, nothing to patch, and it drops from a
+  debian-slim base to roughly 20MB.
+- **The CA bundle and cache directory both come from `gcr.io/distroless/static`
+  rather than from any local build step**, so there's nothing to build to get
+  them. `rustls-platform-verifier` needs a real system trust store on Linux —
+  it does **not** fall back to the webpki roots compiled into the binary —
+  confirmed by running the static binary on bare `scratch` with no cert file:
+  it panics at `Client::new()` with "No CA certificates were loaded from the
+  system" before making a single request.
+- **The disk page cache survives the move to `scratch`.** `scratch` has no
+  shell to `mkdir` a cache directory and no `/etc/passwd` to resolve `HOME`
+  against, which would make `dirs::cache_dir()` return `None` and silently
+  stop caching altogether. `/home/nonroot` from `distroless/static:nonroot` is
+  a real, writable directory, re-owned to this image's uid and mounted as
+  `XDG_CACHE_HOME`, so the cache keeps working exactly as it does today — this
+  matters because mainlynorfolk.info and waterwaysongs.info are
+  hand-maintained volunteer sites with no published rate limit, and losing the
+  cache silently means hammering them on every request.
 - **Builds run on every PR; only `main` pushes publish.** A broken Dockerfile
   now fails before merge instead of after — the image build, lint, format and
   test jobs all run per-PR, and only pushing to the registry is gated on
   `main`.
-- **The disk page cache survives the move to `scratch`.** `scratch` has no
-  `/etc/passwd` and no `HOME`, which would make `dirs::cache_dir()` return
-  `None` and silently stop caching altogether. `HOME` and `XDG_CACHE_HOME` are
-  set explicitly and the cache directory is seeded and owned by the
-  non-root uid, so the cache keeps working exactly as it does today — this
-  matters because mainlynorfolk.info is a hand-maintained volunteer site with
-  no rate limit, and losing the cache means hammering it on every request.
 
 ## [1.1.0] - 2026-07-26
 

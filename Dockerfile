@@ -1,70 +1,50 @@
-# mainlynorfolk-mcp as a container. The default command runs the MCP server over
-# HTTP. This is an HTTP *client* (it scrapes mainlynorfolk.info and
-# waterwaysongs.info), so the CA bundle must be present at runtime —
-# rustls-platform-verifier reads the system trust store.
-#
-# The archive client caches fetched pages on disk under the user's cache dir
-# (see src/client.rs). scratch has no /etc/passwd and no HOME, so
-# dirs::cache_dir() would return None and the cache would silently no-op on
-# every write — hammering a volunteer-run site on every request. HOME and
-# XDG_CACHE_HOME are set explicitly below to keep that cache alive.
+# mainlynorfolk-mcp as a container. No build stage, no package manager — CI
+# builds the static musl binary and this image only copies it in. `docker
+# build .` by hand requires dist/ to be populated first; that is intended,
+# docker builds only ever happen in CI.
 
-# Selects which stage supplies the binary. Must be declared before the first
-# FROM to be usable in one. `docker build .` compiles from source; CI passes
-# prebuilt to reuse the binary the release matrix already built.
-ARG BIN_SOURCE=source
+FROM scratch
 
-# Source build.
-FROM rust:1-slim AS builder
-
-# musl-tools for the static target; cmake/clang for aws-lc-sys, the rustls
-# crypto backend, which is a C/C++ build.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    musl-tools musl-dev cmake clang ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN rustup target add $(uname -m)-unknown-linux-musl
-
-WORKDIR /build
-COPY . .
-
-RUN TARGET=$(uname -m)-unknown-linux-musl && \
-    cargo build --release --locked --target $TARGET && \
-    cp target/$TARGET/release/folk /tmp/folk
-
-# Empty dir to seed the cache directory on scratch, which has no mkdir.
-RUN mkdir -p /emptydir
-
-FROM scratch AS bin-source
-COPY --from=builder /tmp/folk /folk
-
-FROM scratch AS bin-prebuilt
 ARG TARGETARCH
-COPY dist/folk-linux-${TARGETARCH}-musl /folk
 
-# Runtime stage. BuildKit only builds the stage this resolves to, so the
-# source build is skipped entirely when BIN_SOURCE=prebuilt.
-FROM bin-${BIN_SOURCE}
+# VALIDATED, DO NOT "SIMPLIFY" THIS AWAY:
+# rustls-platform-verifier requires a system trust store on Linux. It does NOT
+# fall back to the webpki roots compiled into the binary. With no CA bundle on
+# disk, reqwest panics before making a single request:
+#   Client::new(): reqwest::Error { kind: Builder,
+#     source: General("No CA certificates were loaded from the system") }
+# Verified by running the static binary on bare scratch against a real HTTPS
+# host: without this line it panics; with it, TLS completes and the server's
+# own auth response comes back. Sourced from distroless/static so we need no
+# package manager and no build stage — it is a plain copy from a published,
+# CVE-maintained image.
+COPY --from=gcr.io/distroless/static:latest \
+     /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-# rustls-platform-verifier reads the system trust store, so the bundle has to
-# be in the image. Sourced from the builder rather than pinned separately, so
-# it refreshes whenever the base image does.
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-
-# Disk cache directory. scratch has no /etc/passwd, so USER must be a raw
-# numeric uid, and HOME/XDG_CACHE_HOME must be set explicitly or
-# dirs::cache_dir() returns None and the cache silently no-ops.
-COPY --from=builder --chown=10001:10001 /emptydir /home/app/.cache
+# The archive client keeps an on-disk page cache under dirs::cache_dir() (see
+# src/client.rs). scratch has no shell to mkdir one and no HOME to resolve it
+# against, so without this the cache silently no-ops and every request
+# hammers mainlynorfolk.info and waterwaysongs.info — hand-maintained
+# volunteer sites with no published rate limit. /home/nonroot in
+# distroless/static:nonroot is a real, writable (mode 0700) directory; the
+# --chown re-owns it to the uid this image runs as.
+COPY --from=gcr.io/distroless/static:nonroot --chown=10001:10001 \
+     /home/nonroot /home/app/.cache
 ENV HOME=/home/app
 ENV XDG_CACHE_HOME=/home/app/.cache
 VOLUME ["/home/app/.cache"]
 
+COPY dist/folk-linux-${TARGETARCH}-musl /folk
+
 EXPOSE 8080
 
+# scratch has no /etc/passwd, so this must be a raw numeric uid.
+USER 10001:10001
+
+LABEL org.opencontainers.image.title="mainlynorfolk-mcp"
 LABEL org.opencontainers.image.vendor="James Cleveland"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/radiosilence/mainlynorfolk-mcp"
 
-USER 10001:10001
 ENTRYPOINT ["/folk"]
 CMD ["--http", "0.0.0.0:8080"]
